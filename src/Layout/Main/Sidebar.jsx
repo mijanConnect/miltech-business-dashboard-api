@@ -1,9 +1,8 @@
 import { Menu, Modal, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoIosLogOut } from "react-icons/io";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 
 import {
   Dashboard,
@@ -11,8 +10,6 @@ import {
   People,
   PromotionManagement,
   Rewords,
-  SubscriptionManagement,
-  loginCredentials,
   Settings,
 } from "../../components/common/Svg";
 import image4 from "../../assets/image4.png";
@@ -85,60 +82,48 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       label: <Link to="/">{collapsed ? "" : "Dashboard Overview"}</Link>,
     },
     {
-      key: "/sellManagement",
-      icon: renderIcon(Sales, "/sellManagement"),
+      key: "/sell-management",
+      icon: renderIcon(Sales, "/sell-management"),
       label: (
-        <Link to="/sellManagement">{collapsed ? "" : "Sell Management"}</Link>
+        <Link to="/sell-management">{collapsed ? "" : "Sell Management"}</Link>
       ),
     },
     {
-      key: "/loyaltyProgram",
-      icon: renderIcon(People, "/loyaltyProgram"),
+      key: "/point-tyre-system",
+      icon: renderIcon(People, "/point-tyre-system"),
       label: (
-        <Link to="/loyaltyProgram">
+        <Link to="/point-tyre-system">
           {collapsed ? "" : "Point & Tier System"}
         </Link>
       ),
     },
     {
-      key: "/customerManagement",
-      icon: renderIcon(People, "/customerManagement"),
+      key: "/customer-management",
+      icon: renderIcon(People, "/customer-management"),
       label: (
-        <Link to="/customerManagement">
+        <Link to="/customer-management">
           {collapsed ? "" : "Customer Management"}
         </Link>
       ),
     },
     {
-      key: "/promotionManagement",
-      icon: renderIcon(PromotionManagement, "/promotionManagement"),
+      key: "/promotion-management",
+      icon: renderIcon(PromotionManagement, "/promotion-management"),
       label: (
-        <Link to="/promotionManagement">
+        <Link to="/promotion-management">
           {collapsed ? "" : "Promotions & Discounts"}
         </Link>
       ),
     },
     {
-      key: "/reportingAnalytics",
-      icon: renderIcon(Rewords, "/reportingAnalytics"),
+      key: "/reporting-analytics",
+      icon: renderIcon(Rewords, "/reporting-analytics"),
       label: (
-        <Link to="/reportingAnalytics">
+        <Link to="/reporting-analytics">
           {collapsed ? "" : "Reporting & Analytics"}
         </Link>
       ),
     },
-    // {
-    //   key: "/subscription",
-    //   icon: renderIcon(SubscriptionManagement, "/subscription"),
-    //   label: <Link to="/subscription">{collapsed ? "" : "Subscription"}</Link>,
-    // },
-    // {
-    //   key: "/userManagement",
-    //   icon: renderIcon(loginCredentials, "/userManagement"),
-    //   label: (
-    //     <Link to="/userManagement">{collapsed ? "" : "User Management"}</Link>
-    //   ),
-    // },
     {
       key: "subMenuSetting",
       icon: renderIcon(Settings, "subMenuSetting"),
@@ -149,9 +134,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           label: <Link to="/profile">{collapsed ? "" : "Update Profile"}</Link>,
         },
         {
-          key: "/userManagement",
+          key: "/user-management",
           label: (
-            <Link to="/userManagement">
+            <Link to="/user-management">
               {collapsed ? "" : "User Management"}
             </Link>
           ),
@@ -160,7 +145,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           key: "/terms-and-conditions",
           label: (
             <Link to="/terms-and-conditions">
-              {collapsed ? "" : "Terms And Condition"}
+              {collapsed ? "" : "Terms And Conditions"}
             </Link>
           ),
         },
@@ -205,29 +190,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       className="h-full flex flex-col bg-white border-r border-primary transition-all duration-300"
       style={{ width: collapsed ? 80 : 250 }}
     >
-      {/* Toggle Button */}
-      {/* <div
-        className="flex justify-end items-center p-2 cursor-pointer"
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        {collapsed ? (
-          <MenuUnfoldOutlined style={{ fontSize: 20 }} />
-        ) : (
-          <MenuFoldOutlined style={{ fontSize: 20 }} />
-        )}
-      </div> */}
-
       {/* Logo + Upload */}
       {!collapsed && (
         <div className="flex flex-col items-center py-4">
           <Link to={"/"}>
             <img src={logo} alt="logo" className="w-40 h-40 object-contain" />
           </Link>
-          {/* <Upload beforeUpload={handleLogoUpload} showUploadList={false}>
-            <Button size="small" icon={<UploadOutlined />} className="mt-2">
-              Upload Logo
-            </Button>
-          </Upload> */}
         </div>
       )}
 
@@ -266,313 +234,3 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 };
 
 export default Sidebar;
-
-// import { Menu, Modal } from "antd";
-// import React, { useEffect, useState } from "react";
-// import { Link, useLocation, useNavigate } from "react-router-dom";
-// import { IoIosLogOut } from "react-icons/io";
-// import {
-//   Dashboard,
-//   Marchant,
-//   SalesRepsManagement,
-//   Settings,
-//   RetailersManagement,
-//   InventoryManagement,
-//   LoyaltyProgram,
-//   SubscriptionManagement,
-//   OrderManagement,
-//   People,
-//   PromotionManagement,
-//   SalesRep,
-//   AuditLog,
-//   loginCredentials,
-//   Rewords,
-//   Sales,
-// } from "../../components/common/Svg"; // Import the relevant SVGs
-// import image4 from "../../assets/image4.png"; // Logo image
-
-// const Sidebar = () => {
-//   const location = useLocation();
-//   const path = location.pathname;
-//   const [selectedKey, setSelectedKey] = useState("");
-//   const [openKeys, setOpenKeys] = useState([]);
-//   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-//   const navigate = useNavigate();
-
-//   const showLogoutConfirm = () => {
-//     setIsLogoutModalOpen(true);
-//   };
-
-//   const handleLogout = () => {
-//     localStorage.removeItem("token");
-//     setIsLogoutModalOpen(false);
-//     navigate("/auth/login");
-//   };
-
-//   const handleCancel = () => {
-//     setIsLogoutModalOpen(false);
-//   };
-
-//   // Function to check if a menu item is active
-//   const isItemActive = (itemKey) => {
-//     return (
-//       selectedKey === itemKey ||
-//       (itemKey === "subMenuSetting" &&
-//         ["/profile", "/terms-and-conditions", "/privacy-policy"].includes(
-//           selectedKey
-//         ))
-//     );
-//   };
-
-//   // Render icon with conditional color based on active route
-//   const renderIcon = (IconComponent, itemKey) => {
-//     const isActive = isItemActive(itemKey);
-//     return (
-//       <div
-//         style={{ width: 20, height: 20 }}
-//         className={isActive ? "svg-active" : ""}
-//       >
-//         <IconComponent
-//           className="menu-icon"
-//           fill={isActive ? "#ffffff" : "#1E1E1E"} // Active icon color set to white
-//         />
-//       </div>
-//     );
-//   };
-
-//   const menuItems = [
-//     {
-//       key: "/",
-//       icon: renderIcon(Dashboard, "/"),
-//       label: <Link to="/">Dashboard Overview</Link>,
-//     },
-//     {
-//       key: "/sellManagement",
-//       icon: renderIcon(Sales, "/sellManagement"),
-//       label: <Link to="/sellManagement">Sell Management</Link>,
-//     },
-//     {
-//       key: "/loyaltyProgram",
-//       icon: renderIcon(People, "/loyaltyProgram"),
-//       label: <Link to="/loyaltyProgram">Loyalty Program</Link>,
-//     },
-//     {
-//       key: "/customerManagement",
-//       icon: renderIcon(People, "/customerManagement"),
-//       label: <Link to="/customerManagement">Customer Management</Link>,
-//     },
-//     {
-//       key: "/promotionManagement",
-//       icon: renderIcon(PromotionManagement, "/promotionManagement"),
-//       label: <Link to="/promotionManagement">Promotions & Discounts</Link>,
-//     },
-//     {
-//       key: "/reportingAnalytics",
-//       icon: renderIcon(Rewords, "/reportingAnalytics"),
-//       label: <Link to="/reportingAnalytics">Reporting & Analytics</Link>,
-//     },
-//     {
-//       key: "/subscription",
-//       icon: renderIcon(SubscriptionManagement, "/subscription"),
-//       label: <Link to="/subscription">Subscription</Link>,
-//     },
-//     {
-//       key: "/userManagement",
-//       icon: renderIcon(loginCredentials, "/userManagement"),
-//       label: <Link to="/userManagement">User Management</Link>,
-//     },
-//     // {
-//     //   key: "/salesRepPortal",
-//     //   icon: renderIcon(SalesRep, "/salesRepPortal"),
-//     //   label: <Link to="/salesRepPortal">Sales Rep Portal</Link>,
-//     // },
-//     // {
-//     //   key: "/auditLogs",
-//     //   icon: renderIcon(AuditLog, "/auditLogs"),
-//     //   label: <Link to="/auditLogs">Audit Logs</Link>,
-//     // },
-//     // {
-//     //   key: "/pushNotification",
-//     //   icon: renderIcon(loginCredentials, "/pushNotification"),
-//     //   label: <Link to="/pushNotification">Push Notifications</Link>,
-//     // },
-//     // End of Burger King
-
-//     // {
-//     //   key: "/retailer",
-//     //   icon: renderIcon(RetailersManagement, "/retailer"),
-//     //   label: <Link to="/retailer">Retailer Management</Link>,
-//     // },
-//     // {
-//     //   key: "/orderManagement",
-//     //   icon: renderIcon(OrderManagement, "/orderManagement"),
-//     //   label: <Link to="/orderManagement">Orders Management</Link>,
-//     // },
-//     // {
-//     //   key: "/category",
-//     //   icon: renderIcon(SubscriptionManagement, "/category"),
-//     //   label: <Link to="/category">Category Management</Link>,
-//     // },
-//     // {
-//     //   key: "/products",
-//     //   icon: renderIcon(SubscriptionManagement, "/products"),
-//     //   label: <Link to="/products">Products Management</Link>,
-//     // },
-//     // {
-//     //   key: "/color",
-//     //   icon: renderIcon(SubscriptionManagement, "/color"),
-//     //   label: <Link to="/color">Color Management</Link>,
-//     // },
-//     // {
-//     //   key: "/size",
-//     //   icon: renderIcon(SubscriptionManagement, "/size"),
-//     //   label: <Link to="/size">Size Management</Link>,
-//     // },
-//     // {
-//     //   key: "/inventory",
-//     //   icon: renderIcon(InventoryManagement, "/inventory"),
-//     //   label: <Link to="/inventory">Inventory Management</Link>,
-//     // },
-//     // {
-//     //   key: "/loyaltyProgram",
-//     //   icon: renderIcon(LoyaltyProgram, "/loyaltyProgram"),
-//     //   label: <Link to="/loyaltyProgram">Loyalty Program</Link>,
-//     // },
-//     // {
-//     //   key: "/subsciption",
-//     //   icon: renderIcon(SubscriptionManagement, "/subsciption"),
-//     //   label: <Link to="/subsciption">Subscription Management</Link>,
-//     // },
-
-//     // {
-//     //   key: "category",
-//     //   icon: renderIcon(SubscriptionManagement, "category"),
-//     //   label: "Category Managemnet",
-//     //   children: [
-//     //     {
-//     //       key: "/category",
-//     //       label: <Link to="/category">Category</Link>,
-//     //     },
-//     //   ],
-//     // },
-
-//     // {
-//     //   key: "/user",
-//     //   icon: renderIcon(SubscriptionManagement, "/user"),
-//     //   label: <Link to="/user">User Management</Link>,
-//     // },
-//     {
-//       key: "subMenuSetting",
-//       icon: renderIcon(Settings, "subMenuSetting"),
-//       label: "Settings",
-//       children: [
-//         {
-//           key: "/profile",
-//           label: <Link to="/profile">Update Profile</Link>,
-//         },
-//         // {
-//         //   key: "/faq",
-//         //   label: <Link to="/faq">FAQ </Link>,
-//         // },
-//         // {
-//         //   key: "/contact",
-//         //   label: <Link to="/contact">Contact Us</Link>,
-//         // },
-//         // {
-//         //   key: "/about",
-//         //   label: <Link to="/about">About Us </Link>,
-//         // },
-//         {
-//           key: "/terms-and-conditions",
-//           label: <Link to="/terms-and-conditions">Terms And Condition</Link>,
-//         },
-//         {
-//           key: "/privacy-policy",
-//           label: <Link to="/privacy-policy">Privacy Policy</Link>,
-//         },
-//       ],
-//     },
-//     {
-//       key: "/logout",
-//       icon: <IoIosLogOut size={24} />,
-//       label: <p onClick={showLogoutConfirm}>Logout</p>,
-//     },
-//   ];
-
-//   useEffect(() => {
-//     const selectedItem = menuItems.find(
-//       (item) =>
-//         item.key === path || item.children?.some((sub) => sub.key === path)
-//     );
-
-//     if (selectedItem) {
-//       setSelectedKey(path);
-
-//       if (selectedItem.children) {
-//         setOpenKeys([selectedItem.key]);
-//       } else {
-//         const parentItem = menuItems.find((item) =>
-//           item.children?.some((sub) => sub.key === path)
-//         );
-//         if (parentItem) {
-//           setOpenKeys([parentItem.key]);
-//         }
-//       }
-//     }
-//   }, [path]);
-
-//   const handleOpenChange = (keys) => {
-//     setOpenKeys(keys);
-//   };
-
-//   return (
-//     <div className="sidebar-container">
-//       <Link
-//         to={"/"}
-//         className="logo-container flex items-center justify-center py-4 "
-//       >
-//         <img src={image4} alt="logo" className="w-40 h-40" />
-//       </Link>
-
-//       {/* Scrollable menu section */}
-//       <div className="menu-container">
-//         <Menu
-//           mode="inline"
-//           selectedKeys={[selectedKey]}
-//           openKeys={openKeys}
-//           onOpenChange={handleOpenChange}
-//           className="font-poppins text-black sidebar-menu py-10"
-//           style={{
-//             // borderRightColor: "transparent",
-//             background: "#fff",
-//             padding: "30px 0 30px 5px",
-//           }}
-//           items={menuItems.map((item) => ({
-//             ...item,
-//             label: <span>{item.label}</span>,
-//             children: item.children
-//               ? item.children.map((subItem) => ({
-//                   ...subItem,
-//                   label: <span>{subItem.label}</span>,
-//                 }))
-//               : undefined,
-//           }))}
-//         />
-//       </div>
-
-//       <Modal
-//         centered
-//         title="Confirm Logout"
-//         open={isLogoutModalOpen}
-//         onOk={handleLogout}
-//         onCancel={handleCancel}
-//         okText="Logout"
-//         cancelText="Cancel"
-//       >
-//         <p>Are you sure you want to logout?</p>
-//       </Modal>
-//     </div>
-//   );
-// };
-
-// export default Sidebar;

@@ -45,7 +45,7 @@ const components = {
   },
 };
 
-const LoginCredentials = () => {
+const UserManagement = () => {
   const [data, setData] = useState([
     {
       id: 1,
@@ -316,7 +316,11 @@ const LoginCredentials = () => {
             <p className="text-[22px] font-bold text-primary">
               User Management
             </p>
-            <Form form={viewForm} layout="vertical" className="flex flex-col gap-4">
+            <Form
+              form={viewForm}
+              layout="vertical"
+              className="flex flex-col gap-4"
+            >
               <Form.Item name="name" label="User Name">
                 <Input className="mli-tall-input" />
               </Form.Item>
@@ -357,7 +361,11 @@ const LoginCredentials = () => {
         onOk={handleAddRole}
         okText="Add Role"
       >
-        <Form form={roleForm} layout="vertical" className="flex flex-col gap-4 mb-6">
+        <Form
+          form={roleForm}
+          layout="vertical"
+          className="flex flex-col gap-4 mb-6"
+        >
           <Form.Item
             name="roleName"
             label="Role Name"
@@ -383,7 +391,11 @@ const LoginCredentials = () => {
         okText="Add User"
         width={700}
       >
-        <Form form={userForm} layout="vertical" className="flex flex-col gap-4 mb-6">
+        <Form
+          form={userForm}
+          layout="vertical"
+          className="flex flex-col gap-4 mb-6"
+        >
           <Form.Item
             name="name"
             label="User Name"
@@ -437,4 +449,4 @@ const LoginCredentials = () => {
   );
 };
 
-export default LoginCredentials;
+export default UserManagement;

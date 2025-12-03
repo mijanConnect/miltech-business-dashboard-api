@@ -1,5 +1,4 @@
 import { useLocation, useParams } from "react-router-dom";
-import SalesCardInfo from "../SalesCardInfo";
 import DetailsCard from "./DetailsCard";
 import RetailerInfo from "./RetailerInfo";
 

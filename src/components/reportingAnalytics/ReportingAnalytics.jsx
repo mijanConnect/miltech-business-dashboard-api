@@ -1,10 +1,4 @@
-import React from "react";
-import { Tabs } from "antd";
-import MerchantReportingAnalytics from "./Tab/MerchantReportingAnalytics";
 import CustomerReportingAnalytics from "./Tab/CustomerReportingAnalytics";
-import AccountingReports from "./Tab/AccountingReports";
-
-const { TabPane } = Tabs;
 
 export default function ReportingAnalyticsPage() {
   return (
