@@ -18,7 +18,7 @@ import CustomerManagement from "../components/customerManagement/customerManagem
 import TierSystem from "../components/TierSystem/TierSystem";
 import PromotionManagement from "../components/promotionManagement/PromotionManagement";
 import ReportingAnalytics from "../components/reportingAnalytics/ReportingAnalytics";
-import UserManagement from "../components/loginCredentials/LoginCredentials";
+import UserManagement from "../components/userManagement/UserManagement";
 import PrivacyPolicy from "../Pages/Dashboard/PrivacyPolicy";
 import TermsAndConditions from "../Pages/Dashboard/TermsAndCondition";
 import NotFound from "../NotFound";
