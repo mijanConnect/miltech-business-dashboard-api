@@ -36,10 +36,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         token: {
           colorPrimary: "#3fae6a",
           colorBorder: "#3fae6a", // Default border color
-          // colorText: "rgba(0, 0, 0, 0.88)", // Default text color
-          // colorTextPlaceholder: "#bfbfbf", // Placeholder color
-          // colorBgContainer: "#ffffff", // Background color
-          // controlOutline: "rgba(232, 80, 91, 0.1)", // Focus outline color (based on your primary color)
         },
         components: {
           Input: {

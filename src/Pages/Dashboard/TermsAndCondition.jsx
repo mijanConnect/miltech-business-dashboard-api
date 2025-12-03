@@ -1,6 +1,5 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import JoditEditor from "jodit-react";
-import GradientButton from "../../components/common/GradiantButton";
 import { Button, message, Modal } from "antd";
 
 const TermsAndCondition = () => {
@@ -38,12 +37,6 @@ const TermsAndCondition = () => {
     <div className="">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">Terms & Conditions</h2>
-        {/* <GradientButton
-          onClick={showModal}
-          className="w-60 bg-secondary text-white h-10"
-        >
-          Update Terms & Conditions
-        </GradientButton> */}
       </div>
 
       <div className="saved-content mt-6 border p-6 rounded-lg bg-white">
@@ -67,13 +60,13 @@ const TermsAndCondition = () => {
           >
             Cancel
           </Button>,
-          <GradientButton
+          <Button
             key="submit"
             onClick={handleOk}
             className="bg-secondary text-white"
           >
             Update Terms & Conditions
-          </GradientButton>,
+          </Button>,
         ]}
       >
         {isModalOpen && (

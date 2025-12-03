@@ -10,14 +10,13 @@ import {
   Row,
   Col,
 } from "antd";
-import GradientButton from "../../common/GradiantButton";
 import { IoEyeSharp } from "react-icons/io5";
 import { MdArrowBackIosNew, MdDelete } from "react-icons/md";
 import { LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const RetailerInfo = ({ salesRep }) => {
-  const router = useNavigate()
+  const router = useNavigate();
   console.log(salesRep?.name); // Check the value of salesRep.name
   const [data, setData] = useState([
     {
@@ -384,14 +383,7 @@ const RetailerInfo = ({ salesRep }) => {
           <h1 className="text-2xl font-bold">Retailer List</h1>
         </div>
         <div className="flex gap-4">
-          {/* <GradientButton
-            onClick={showTargetModal} 
-          >
-            Set Target Sales Reps
-          </GradientButton> */}
-          <GradientButton onClick={() => showModal()}>
-            Add Retailer
-          </GradientButton>
+          <Button onClick={() => showModal()}>Add Retailer</Button>
         </div>
       </div>
 
