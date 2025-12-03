@@ -1,21 +1,35 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import JoditEditor from "jodit-react";
 import { Button, message, Modal } from "antd";
+import {
+  useGetTermsAndConditionsQuery,
+  useUpdateTermsAndConditionsMutation,
+} from "../../redux/apiSlices/termsAndConditionSlice";
 
-const TermsAndCondition = () => {
+const TermsAndConditions = () => {
   const editor = useRef(null);
 
-  // Using a single state for both content and saved content
-  const [termsContent, setTermsContent] = useState(`
-    <h2 style="font-size: 24px; font-weight: bold; color: #333;">Terms & Conditions</h2>
-    <p style="font-size: 16px; color: #555;">Welcome to our website. If you continue to browse and use this website, you are agreeing to comply with and be bound by the following terms and conditions of use.</p><br />
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">1. General Terms</h3>
-    <p style="font-size: 16px; color: #555;">The content of the pages of this website is for your general information and use only. It is subject to change without notice.</p><br />
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">2. Privacy Policy</h3>
-    <p style="font-size: 16px; color: #555;">Your use of this website is also subject to our Privacy Policy, which is incorporated by reference.</p><br />
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">3. Disclaimer</h3>
-    <p style="font-size: 16px; color: #555;">The information contained in this website is for general information purposes only. We endeavor to keep the information up to date and correct.</p>
-`);
+  const {
+    data: termsData,
+    isLoading,
+    isError,
+  } = useGetTermsAndConditionsQuery();
+
+  const [updateTermsAndConditions, { isLoading: isUpdating }] =
+    useUpdateTermsAndConditionsMutation();
+
+  // Initialize content state from API data or default
+  const [termsContent, setTermsContent] = useState(
+    termsData?.data?.content ||
+      "<p>Your terms and conditions content goes here.</p>"
+  );
+
+  // Update state when API data loads
+  useEffect(() => {
+    if (termsData?.data?.content) {
+      setTermsContent(termsData.data.content);
+    }
+  }, [termsData?.data?.content]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -23,10 +37,16 @@ const TermsAndCondition = () => {
     setIsModalOpen(true);
   };
 
-  const handleOk = () => {
-    // When saving, just set the content to the saved state
-    setIsModalOpen(false);
-    message.success("Terms & Conditions updated successfully!");
+  const handleOk = async () => {
+    try {
+      // Send update request to API
+      await updateTermsAndConditions({ content: termsContent }).unwrap();
+      setIsModalOpen(false);
+      message.success("Terms & Conditions updated successfully!");
+    } catch (error) {
+      message.error("Failed to update Terms & Conditions");
+      console.error("Update error:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -35,8 +55,14 @@ const TermsAndCondition = () => {
 
   return (
     <div className="">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-start items-end mb-6">
         <h2 className="text-xl font-bold">Terms & Conditions</h2>
+        {/* <Button
+          onClick={showModal}
+          className="bg-primary px-8 py-5 rounded-full text-white hover:text-secondary text-[17px] font-bold"
+        >
+          Update Terms & Conditions
+        </Button> */}
       </div>
 
       <div className="saved-content mt-6 border p-6 rounded-lg bg-white">
@@ -63,9 +89,10 @@ const TermsAndCondition = () => {
           <Button
             key="submit"
             onClick={handleOk}
+            disabled={isUpdating}
             className="bg-secondary text-white"
           >
-            Update Terms & Conditions
+            {isUpdating ? "Updating..." : "Update Terms & Conditions"}
           </Button>,
         ]}
       >
@@ -85,4 +112,4 @@ const TermsAndCondition = () => {
   );
 };
 
-export default TermsAndCondition;
+export default TermsAndConditions;

@@ -1,39 +1,38 @@
 import { api } from "../api/baseApi";
 
-const privacyPolicySlice = api.injectEndpoints({
+export const privacyPolicyApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    updatePricyPolicy: builder.mutation({
-      query: ({ id, description }) => {
+    // ---------------------------------------
+    // GET privacy policy
+    // ---------------------------------------
+    getPrivacyPolicy: builder.query({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args) {
+          args.forEach((arg) => {
+            params.append(arg.name, arg.value);
+          });
+        }
         return {
-          url: `/privacy/update-privacy/${id}`,
-          method: "PATCH",
-          body: { description },
-          headers: {
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
-          },
-        };
-      },
-    }),
-    privacyPolicy: builder.query({
-      query: () => {
-        return {
-          url: "/privacy/get-privacy",
+          url: `/rule/privacy-policy?${params.toString()}`,
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
-          },
         };
       },
-      transformResponse: ({ data }) => {
-        return data;
-      },
+      transformResponse: (response) => response,
+      providesTags: ["PrivacyPolicy"],
+    }),
+    // ---------------------------------------
+    // UPDATE privacy policy
+    // ---------------------------------------
+    updatePrivacyPolicy: builder.mutation({
+      query: (body) => ({
+        url: `/rule/privacy-policy`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["PrivacyPolicy"],
     }),
   }),
 });
 
-export const { useUpdatePricyPolicyMutation, usePrivacyPolicyQuery } =
-  privacyPolicySlice;
+export const { useGetPrivacyPolicyQuery, useUpdatePrivacyPolicyMutation } = privacyPolicyApi;

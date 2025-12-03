@@ -26,14 +26,13 @@ import PrivateRoute from "./ProtectedRoute";
 
 const router = createBrowserRouter([
   {
-    // path: "/",
     element: (
       <PrivateRoute>
         <Main />
       </PrivateRoute>
     ),
+    // path: "/",
     // element: <Main />,
-    // element: <Auth />,
 
     children: [
       {
@@ -64,7 +63,6 @@ const router = createBrowserRouter([
         path: "/reporting-analytics",
         element: <ReportingAnalytics />,
       },
-      // Burger King end
       {
         path: "/privacy-policy",
         element: <PrivacyPolicy />,
