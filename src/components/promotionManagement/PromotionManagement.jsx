@@ -1,90 +1,84 @@
 "use client";
-import React, { useState } from "react";
-import {
-  Table,
-  Button,
-  Switch,
-  Form,
-  Input,
-  Tooltip,
-  Select,
-  Upload,
-  message,
-  Modal,
-  DatePicker,
-} from "antd";
+import { useMemo, useState } from "react";
+import { Button, Switch, Tooltip, Modal } from "antd";
 import { FaEdit } from "react-icons/fa";
-import { IoArrowBack } from "react-icons/io5";
-import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
-import MarchantIcon from "../../assets/marchant.png";
 import NewCampaign from "../promotionManagement/components/NewCampaing.jsx";
-import dayjs from "dayjs"; // ✅ AntD v5 uses Dayjs
-
-const { Option } = Select;
-
-const components = {
-  header: {
-    row: (props) => (
-      <tr
-        {...props}
-        style={{
-          backgroundColor: "#f0f5f9",
-          height: "50px",
-          color: "secondary",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-    cell: (props) => (
-      <th
-        {...props}
-        style={{
-          color: "secondary",
-          fontWeight: "bold",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-  },
-};
+import NotificationsModal from "../promotionManagement/components/NotificationsModal.jsx";
+import CustomTable from "../../components/common/CustomTable.jsx";
+import { useSearchParams } from "react-router-dom";
+import { useGetPromoDetailsQuery } from "../../redux/apiSlices/promoSlice.js";
 
 const PromotionManagement = () => {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      promotionName: "Spring Sale",
-      promotionType: "Discount",
-      customerReach: 1000,
-      customerSegment: "New Customers",
-      discountPercentage: 20,
-      startDate: "2023-11-21",
-      endDate: "2023-12-31",
-      status: "Active",
-    },
-    {
-      id: 2,
-      promotionName: "Summer Offer",
-      promotionType: "Cashback",
-      customerReach: 500,
-      customerSegment: "Returning Customers",
-      discountPercentage: 15,
-      startDate: "2023-06-01",
-      endDate: "2023-06-30",
-      status: "Inactive",
-    },
-  ]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchText, setSearchText] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
-  const [selectedRecord, setSelectedRecord] = useState(null);
+  const queryParams = [
+    { name: "page", value: page },
+    { name: "limit", value: limit },
+  ];
+  if (searchText.trim()) {
+    queryParams.push({ name: "searchTerm", value: searchText.trim() });
+  }
+
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetPromoDetailsQuery(queryParams);
+
+  console.log(response);
+
+  const tableData = useMemo(() => {
+    const items = response?.data?.promotions || [];
+    return items.map((item, index) => ({
+      key: item._id,
+      id: index + 1 + (page - 1) * limit,
+      promotionName: item.name,
+      promotionType: item.promotionType,
+      customerReach: item.customerReach,
+      customerSegment: item.customerSegment,
+      discountPercentage: item.discountPercentage,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      selectedDays:
+        item.availableDays && item.availableDays[0] === "all"
+          ? [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday",
+            ]
+          : item.availableDays || item.promotionDays || [],
+      status: item.status === "active" ? "Active" : "Inactive",
+      raw: item,
+    }));
+  }, [response, page, limit]);
+
+  const paginationData = {
+    pageSize: limit,
+    total: response?.pagination?.total || 0,
+    current: page,
+  };
+
+  const handlePaginationChange = (newPage, newPageSize) => {
+    setPage(newPage);
+    if (newPageSize !== limit) {
+      setLimit(newPageSize);
+    }
+  };
+
   const [isNewCampaignModalVisible, setIsNewCampaignModalVisible] =
     useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isNotifyModalVisible, setIsNotifyModalVisible] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState([]);
+  const [editingCampaign, setEditingCampaign] = useState(null);
 
   const handleAddCampaign = (newCampaign) => {
     setData((prev) => [
@@ -101,14 +95,14 @@ const PromotionManagement = () => {
     });
   };
 
-  const handleEditSave = (values) => {
+  const handleEditSave = (updatedCampaign) => {
     setData((prev) =>
       prev.map((item) =>
-        item.id === selectedRecord.id ? { ...item, ...values } : item
+        item.id === updatedCampaign.id ? { ...item, ...updatedCampaign } : item
       )
     );
     setIsEditModalVisible(false);
-    setSelectedRecord(null);
+    setEditingCampaign(null);
     Swal.fire({
       icon: "success",
       title: "Updated!",
@@ -120,32 +114,12 @@ const PromotionManagement = () => {
 
   const handleEditCancel = () => {
     setIsEditModalVisible(false);
-    setSelectedRecord(null);
+    setEditingCampaign(null);
   };
 
-  const handleSendNotification = (values) => {
-    setIsNotifyModalVisible(false);
-    Swal.fire({
-      icon: "success",
-      title: "Notification Sent!",
-      text: `Message titled "${values.title}" has been sent to ${values.segment}.`,
-      timer: 1500,
-      showConfirmButton: false,
-    });
-    setUploadedImage([]); // Clear uploaded image after sending
-  };
-
-  // Image upload validation
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-    if (!isJpgOrPng) {
-      message.error("You can only upload JPG/PNG files!");
-    }
-    return isJpgOrPng || Upload.LIST_IGNORE;
-  };
-
-  const handleUploadChange = ({ fileList }) => {
-    setUploadedImage(fileList);
+  const handleEditClick = (record) => {
+    setEditingCampaign(record);
+    setIsEditModalVisible(true);
   };
 
   const columns = [
@@ -160,12 +134,6 @@ const PromotionManagement = () => {
       title: "Promotion Type",
       dataIndex: "promotionType",
       key: "promotionType",
-      align: "center",
-    },
-    {
-      title: "Customer Reach",
-      dataIndex: "customerReach",
-      key: "customerReach",
       align: "center",
     },
     {
@@ -209,6 +177,43 @@ const PromotionManagement = () => {
         );
       },
     },
+    {
+      title: "Days",
+      dataIndex: "selectedDays",
+      key: "selectedDays",
+      align: "center",
+      render: (days) => {
+        // Check if days array contains "all" or has all 7 days
+        const isAllDays = days && (days.includes("all") || days.length === 7);
+
+        if (isAllDays) {
+          return (
+            <div className="flex justify-center">
+              <span className="border border-primary px-3 py-1 rounded-sm text-xs font-semibold bg-primary/10">
+                All Days
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex flex-wrap justify-center gap-1 max-w-[200px]">
+            {days && days.length > 0 ? (
+              days.map((day, index) => (
+                <span
+                  key={index}
+                  className="border border-primary px-2 py-0 rounded-sm text-xs"
+                >
+                  {day.substring(0, 3)}
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400">-</span>
+            )}
+          </div>
+        );
+      },
+    },
     { title: "Status", dataIndex: "status", key: "status", align: "center" },
     {
       title: "Action",
@@ -220,10 +225,7 @@ const PromotionManagement = () => {
           <div className="flex gap-2 justify-between align-middle">
             <Tooltip title="Edit">
               <button
-                onClick={() => {
-                  setSelectedRecord(record);
-                  setIsEditModalVisible(true);
-                }}
+                onClick={() => handleEditClick(record)}
                 className="text-primary hover:text-green-700 text-[17px]"
               >
                 <FaEdit />
@@ -275,85 +277,6 @@ const PromotionManagement = () => {
     },
   ];
 
-  const columns2 = [
-    { title: "SL", dataIndex: "id", key: "id", align: "center" },
-    {
-      title: "Promotion Name",
-      dataIndex: "promotionName",
-      key: "promotionName",
-      align: "center",
-    },
-    {
-      title: "Promotion Type",
-      dataIndex: "promotionType",
-      key: "promotionType",
-      align: "center",
-    },
-    {
-      title: "Customer Reach",
-      dataIndex: "customerReach",
-      key: "customerReach",
-      align: "center",
-    },
-    {
-      title: "Customer Segment",
-      dataIndex: "customerSegment",
-      key: "customerSegment",
-      align: "center",
-    },
-    {
-      title: "Discount Percentage",
-      dataIndex: "discountPercentage",
-      key: "discountPercentage",
-      align: "center",
-    },
-    { title: "Status", dataIndex: "status", key: "status", align: "center" },
-  ];
-
-  // Full-page view
-  if (selectedRecord && !isEditModalVisible) {
-    return (
-      <div className="">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center mb-4 gap-6">
-            <Button
-              icon={<IoArrowBack />}
-              onClick={() => setSelectedRecord(null)}
-              className="mb-4"
-            ></Button>
-            <div>
-              <h1 className="text-[24px] font-bold">Campaign Details</h1>
-              <p className="text-[16px] font-normal mt-2">
-                View and manage all the details of your active campaigns.
-              </p>
-            </div>
-          </div>
-          <Button
-            onClick={() => setSelectedRecord(null)}
-            type="primary"
-            className="bg-primary !text-white hover:!text-secondary hover:!bg-white hover:!border-primary px-[30px] py-[25px] rounded-full text-[18px] font-bold"
-          >
-            Export
-          </Button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <Table
-            dataSource={data}
-            columns={columns2}
-            pagination={{ pageSize: 10 }}
-            bordered={false}
-            size="small"
-            rowClassName="custom-row"
-            components={components}
-            className="custom-table"
-            scroll={{ x: "max-content" }}
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="">
       <div className="flex justify-between items-end flex-col md:flex-row gap-4 mb-4">
@@ -379,94 +302,32 @@ const PromotionManagement = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <Table
-          dataSource={data}
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-          bordered={false}
-          size="small"
-          rowClassName="custom-row"
-          components={components}
-          className="custom-table"
-          scroll={{ x: "max-content" }}
-        />
-      </div>
+      <CustomTable
+        data={tableData}
+        columns={columns}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        pagination={paginationData}
+        onPaginationChange={handlePaginationChange}
+        rowKey="key"
+      />
 
       {/* Edit Campaign Modal */}
       <Modal
-        title="Edit Promotion"
+        title="Edit Campaign"
         visible={isEditModalVisible}
         onCancel={handleEditCancel}
         footer={null}
-        width={600}
+        width={1000}
         closable={true}
       >
-        {selectedRecord && (
-          <Form
-            layout="vertical"
-            // ✅ Convert string dates to Dayjs for DatePicker initial values
-            initialValues={{
-              ...selectedRecord,
-              startDate: selectedRecord.startDate
-                ? dayjs(selectedRecord.startDate)
-                : null,
-              endDate: selectedRecord.endDate
-                ? dayjs(selectedRecord.endDate)
-                : null,
-            }}
-            onFinish={handleEditSave}
-            className="flex flex-col gap-4"
-          >
-            <Form.Item
-              name="promotionName"
-              label="Promotion Name"
-              rules={[{ required: true, message: "Please enter name" }]}
-            >
-              <Input className="mli-tall-input" />
-            </Form.Item>
-            <Form.Item name="promotionType" label="Promotion Type">
-              <Input className="mli-tall-input" />
-            </Form.Item>
-            <Form.Item name="customerReach" label="Customer Reach">
-              <Input type="number" className="mli-tall-input" />
-            </Form.Item>
-            <Form.Item name="customerSegment" label="Customer Segment">
-              <Input className="mli-tall-input" />
-            </Form.Item>
-            <Form.Item name="discountPercentage" label="Discount Percentage">
-              <Input type="number" className="mli-tall-input" />
-            </Form.Item>
-
-            {/* ✅ Updated to AntD DatePicker like your reference */}
-            <Form.Item name="startDate" label="Start Date">
-              <DatePicker
-                className="mli-tall-picker"
-                style={{ width: "100%" }}
-                format="YYYY-MM-DD"
-              />
-            </Form.Item>
-            <Form.Item name="endDate" label="End Date">
-              <DatePicker
-                className="mli-tall-picker"
-                style={{ width: "100%" }}
-                format="YYYY-MM-DD"
-              />
-            </Form.Item>
-
-            <div className="flex gap-2 mt-4">
-              <Button
-                type="default"
-                className="flex-1"
-                onClick={handleEditCancel}
-              >
-                Cancel
-              </Button>
-              <Button type="primary" htmlType="submit" className="flex-1">
-                Save Changes
-              </Button>
-            </div>
-          </Form>
+        {editingCampaign && (
+          <NewCampaign
+            onSave={handleEditSave}
+            onCancel={handleEditCancel}
+            editData={editingCampaign}
+            isEdit={true}
+          />
         )}
       </Modal>
 
@@ -486,102 +347,10 @@ const PromotionManagement = () => {
       </Modal>
 
       {/* Notification Modal */}
-      <Modal
-        title="Send Notification"
+      <NotificationsModal
         visible={isNotifyModalVisible}
         onCancel={() => setIsNotifyModalVisible(false)}
-        footer={null}
-        width={500}
-        closable={true}
-      >
-        <Form
-          layout="vertical"
-          onFinish={handleSendNotification}
-          className="flex flex-col gap-4"
-        >
-          <Form.Item
-            name="segment"
-            label="All customers (that have transacted with this merchant)"
-            rules={[{ required: true, message: "Please select a segment" }]}
-          >
-            <Select placeholder="Choose segment" className="mli-tall-select">
-              <Option value="New Customers">New Customers</Option>
-              <Option value="Returning Customers">Returning Customers</Option>
-              <Option value="VIP Customers">VIP Customers</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="title"
-            label="All customers that have at least x number of points"
-            rules={[{ required: true, message: "Please enter a number" }]}
-          >
-            <Input placeholder="" className="mli-tall-input" />
-          </Form.Item>
-
-          <Form.Item
-            name="message"
-            label="Customers located within x km of radius from the merchant location"
-            rules={[{ required: true, message: "Please enter distance/KM" }]}
-          >
-            <Input placeholder="" className="mli-tall-input" />
-          </Form.Item>
-
-          <Form.Item
-            name="additionalInfo"
-            label="Promotion/discount message"
-            rules={[{ required: false }]}
-          >
-            <Input.TextArea
-              placeholder="Enter additional information here"
-              autoSize={{ minRows: 3, maxRows: 6 }}
-              className="mli-tall-input"
-            />
-          </Form.Item>
-
-          <Form.Item name="image" label="Upload Image (JPG/PNG only)">
-            <Upload
-              listType="picture"
-              fileList={uploadedImage}
-              beforeUpload={(file) => {
-                const isJpgOrPng =
-                  file.type === "image/jpeg" || file.type === "image/png";
-                if (!isJpgOrPng)
-                  message.error("You can only upload JPG/PNG files!");
-                const isLt2M = file.size / 1024 / 1024 < 2;
-                if (!isLt2M) message.error("Image must smaller than 2MB!");
-                return isJpgOrPng && isLt2M;
-              }}
-              onChange={handleUploadChange}
-              onRemove={(file) =>
-                setUploadedImage((prev) =>
-                  prev.filter((f) => f.uid !== file.uid)
-                )
-              }
-              maxCount={1}
-              accept=".jpg,.jpeg,.png"
-            >
-              <Button icon={<UploadOutlined />}>Click to Upload</Button>
-            </Upload>
-            <p className="text-sm text-gray-500 mt-1">
-              Allowed file types: JPG, PNG. Maximum file size: 2MB.
-            </p>
-          </Form.Item>
-
-          <div className="flex gap-2 mt-4">
-            <Button
-              type="default"
-              className="flex-1"
-              onClick={() => setIsNotifyModalVisible(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" className="flex-1">
-              Send
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+      />
     </div>
   );
 };

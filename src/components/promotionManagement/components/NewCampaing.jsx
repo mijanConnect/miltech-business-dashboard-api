@@ -7,8 +7,10 @@ import {
   Input,
   Select,
   Upload,
+  message,
 } from "antd";
 import { useState } from "react";
+import dayjs from "dayjs";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -23,12 +25,36 @@ const daysOptions = [
   { label: "Sun", value: "Sunday" },
 ];
 
-const NewCampaign = ({ onSave, onCancel }) => {
+const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
   const [form] = Form.useForm();
   const [thumbnail, setThumbnail] = useState("");
   const [uploadedImage, setUploadedImage] = useState([]);
   const [checkedDays, setCheckedDays] = useState([]);
   const [checkAll, setCheckAll] = useState(false);
+
+  // Initialize form with editData if in edit mode
+  useState(() => {
+    if (isEdit && editData) {
+      const initialDays = editData.promotionDays || [];
+      setCheckedDays(initialDays);
+      setCheckAll(initialDays.length === daysOptions.length);
+
+      const dateRange =
+        editData.startDate && editData.endDate
+          ? [dayjs(editData.startDate), dayjs(editData.endDate)]
+          : null;
+
+      form.setFieldsValue({
+        promotionName: editData.promotionName,
+        promotionType: editData.promotionType,
+        customerReach: editData.customerReach,
+        customerSegment: editData.customerSegment,
+        discountPercentage: editData.discountPercentage,
+        dateRange: dateRange,
+        promotionDays: initialDays,
+      });
+    }
+  }, []);
 
   const handleThumbnailChange = ({ file }) => {
     if (file.status === "done" || file.originFileObj) {
@@ -40,7 +66,7 @@ const NewCampaign = ({ onSave, onCancel }) => {
 
   const handleSubmit = (values) => {
     const [startDate, endDate] = values.dateRange || [];
-    onSave({
+    const campaignData = {
       promotionName: values.promotionName,
       promotionType: values.promotionType,
       customerReach: values.customerReach,
@@ -50,7 +76,14 @@ const NewCampaign = ({ onSave, onCancel }) => {
       endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
       thumbnail,
       promotionDays: values.promotionDays || [],
-    });
+    };
+
+    // If editing, include the id
+    if (isEdit && editData) {
+      campaignData.id = editData.id;
+    }
+
+    onSave(campaignData);
     form.resetFields();
     setThumbnail("");
   };
@@ -84,7 +117,9 @@ const NewCampaign = ({ onSave, onCancel }) => {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">Add New Promotion</h2>
+      <h2 className="text-lg font-bold mb-4">
+        {isEdit ? "Edit Promotion" : "Add New Promotion"}
+      </h2>
       <Form layout="vertical" form={form} onFinish={handleSubmit}>
         <div className="flex flex-row justify-between gap-4">
           <div className="w-full flex flex-col gap-4">
@@ -248,7 +283,7 @@ const NewCampaign = ({ onSave, onCancel }) => {
         <div className="flex justify-end gap-2">
           <Button onClick={onCancel}>Cancel</Button>
           <Button type="primary" htmlType="submit" className="bg-primary">
-            Save
+            {isEdit ? "Update" : "Save"}
           </Button>
         </div>
       </Form>
