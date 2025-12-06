@@ -1,27 +1,59 @@
-import { Form, Input, Select, Upload } from "antd";
+import { Form, Input, Select, Upload, message } from "antd";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2"; // ✅ import SweetAlert2
+import { useUpdateProfileMutation } from "../../redux/apiSlices/authSlice";
 
 const { Option } = Select;
 
 const ShopInfo = () => {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const phoneFromQuery = searchParams.get("phone") || "";
+  const emailFromQuery = searchParams.get("email") || "";
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
   const onFinish = async (values) => {
-    console.log("Form values:", values);
+    const formData = new FormData();
 
-    // ✅ Show SweetAlert on form submit
-    Swal.fire({
-      title: "Your Profile is Under Review",
-      text: "Your application is under review. Please wait for admin approval.",
-      icon: "warning",
-      confirmButtonText: "Done",
-    }).then(() => {
-      // Navigate after closing the alert
-      navigate("/auth/login");
+    const payloadMap = {
+      firstName: values.firstName,
+      businessName: values.businessName,
+      email: values.email,
+      phone: values.phone,
+      country: values.country,
+      city: values.city,
+      service: values.service,
+      address: values.address,
+    };
+
+    Object.entries(payloadMap).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== "") {
+        formData.append(key, val);
+      }
     });
+
+    const logoFile = values.logo?.[0]?.originFileObj;
+    if (logoFile) {
+      formData.append("profile", logoFile);
+    }
+
+    try {
+      await updateProfile(formData).unwrap();
+      Swal.fire({
+        title: "Your Profile is Under Review",
+        text: "Your application is under review. Please wait for admin approval.",
+        icon: "success",
+        confirmButtonText: "Done",
+      }).then(() => {
+        navigate("/auth/login");
+      });
+    } catch (err) {
+      const errorMsg = err?.data?.message || "Profile update failed";
+      message.error(errorMsg);
+    }
   };
 
   return (
@@ -39,10 +71,30 @@ const ShopInfo = () => {
 
       {/* Form */}
       <Form
+        form={form}
         onFinish={onFinish}
         layout="vertical"
         className="flex flex-col gap-4"
+        initialValues={{
+          phone: phoneFromQuery,
+          email: emailFromQuery,
+        }}
       >
+        {/* First Name */}
+        {/* <Form.Item
+          name="firstName"
+          rules={[{ required: true, message: "Please enter first name" }]}
+        >
+          <Input
+            placeholder="Enter First Name"
+            style={{
+              height: 45,
+              border: "1px solid #3FAE6A",
+              borderRadius: "200px",
+            }}
+          />
+        </Form.Item> */}
+
         {/* Business Name */}
         <Form.Item
           name="businessName"
@@ -58,20 +110,35 @@ const ShopInfo = () => {
           />
         </Form.Item>
 
-        {/* Website URL */}
-        <Form.Item
-          name="website"
-          rules={[{ required: true, message: "Please enter website URL" }]}
+        {/* Email */}
+        {/* <Form.Item
+          name="email"
+          rules={[{ required: true, message: "Please enter email" }]}
         >
           <Input
-            placeholder="Enter Website URL"
+            placeholder="Enter Email"
             style={{
               height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
           />
-        </Form.Item>
+        </Form.Item> */}
+
+        {/* Phone */}
+        {/* <Form.Item
+          name="phone"
+          rules={[{ required: true, message: "Please enter phone number" }]}
+        >
+          <Input
+            placeholder="Enter Phone"
+            style={{
+              height: 45,
+              border: "1px solid #3FAE6A",
+              borderRadius: "200px",
+            }}
+          />
+        </Form.Item> */}
 
         {/* Country Dropdown */}
         <Form.Item
@@ -86,9 +153,9 @@ const ShopInfo = () => {
               height: 45,
             }}
           >
-            <Option value="usa">United States</Option>
-            <Option value="uk">United Kingdom</Option>
-            <Option value="india">India</Option>
+            <Option value="Bangladesh">Bangladesh</Option>
+            <Option value="India">India</Option>
+            <Option value="USA">USA</Option>
           </Select>
         </Form.Item>
 
@@ -105,15 +172,15 @@ const ShopInfo = () => {
               height: 45,
             }}
           >
-            <Option value="newyork">New York</Option>
-            <Option value="london">London</Option>
-            <Option value="delhi">Delhi</Option>
+            <Option value="Dhaka">Dhaka</Option>
+            <Option value="Chattogram">Chattogram</Option>
+            <Option value="Sylhet">Sylhet</Option>
           </Select>
         </Form.Item>
 
         {/* Services Dropdown */}
         <Form.Item
-          name="services"
+          name="service"
           rules={[{ required: true, message: "Please select your services" }]}
         >
           <Select
@@ -124,9 +191,9 @@ const ShopInfo = () => {
               height: 45,
             }}
           >
-            <Option value="food">Food Delivery</Option>
-            <Option value="grocery">Grocery</Option>
-            <Option value="electronics">Electronics</Option>
+            <Option value="Software Development">Software Development</Option>
+            <Option value="E-commerce">E-commerce</Option>
+            <Option value="Logistics">Logistics</Option>
           </Select>
         </Form.Item>
 
@@ -140,7 +207,7 @@ const ShopInfo = () => {
             beforeUpload={() => false}
             maxCount={1}
             className="w-full"
-            accept=".jpg,.jpeg,.png" // ✅ Only allow JPG/PNG files
+            accept=".jpg,.jpeg,.png"
           >
             <button
               type="button"
@@ -188,6 +255,7 @@ const ShopInfo = () => {
           <button
             htmlType="submit"
             type="submit"
+            disabled={isLoading}
             style={{
               width: "100%",
               height: 45,
@@ -198,7 +266,7 @@ const ShopInfo = () => {
             }}
             className="flex items-center justify-center bg-[#3FAE6A] rounded-lg"
           >
-            Continue
+            {isLoading ? "Submitting..." : "Continue"}
           </button>
         </Form.Item>
       </Form>
