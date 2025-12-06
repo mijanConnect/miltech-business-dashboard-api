@@ -1,15 +1,31 @@
-import { Form, Input } from "antd";
+import { Form, Input, message } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import FormItem from "../../components/common/FormItem";
 import image4 from "../../assets/image4.png";
+import { useRegisterMutation } from "../../redux/apiSlices/authSlice";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const [registerUser, { isLoading }] = useRegisterMutation();
 
   const onFinish = async (values) => {
-    console.log("Form values:", values);
-    navigate("/auth/otp-verification");
+    const payload = {
+      firstName: values.name,
+      phone: values.phone,
+      email: values.email,
+      password: values.password,
+      role: "MERCENT",
+    };
+
+    try {
+      await registerUser(payload).unwrap();
+      message.success("Registration successful. Please verify OTP.");
+      navigate("/auth/otp-verification");
+    } catch (err) {
+      const errorMsg = err?.data?.message || "Registration failed";
+      message.error(errorMsg);
+    }
   };
 
   return (
@@ -18,7 +34,7 @@ const SignUp = () => {
       <div className="text-center mb-2">
         <img src={image4} alt="logo" className="h-20 w-20 mx-auto" />
         <h1 className="text-[25px] font-semibold mb-[10px] mt-[20px]">
-          Merchants Dashboard
+          Merchant Dashboard
         </h1>
         <p>Create an account</p>
       </div>
@@ -38,7 +54,7 @@ const SignUp = () => {
           <Input
             placeholder="Enter your name"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
@@ -59,7 +75,7 @@ const SignUp = () => {
           <Input
             placeholder="Enter your phone number"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
@@ -75,7 +91,7 @@ const SignUp = () => {
           <Input.Password
             placeholder="Enter your password"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
@@ -102,7 +118,7 @@ const SignUp = () => {
           <Input.Password
             placeholder="Confirm your password"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
@@ -114,6 +130,7 @@ const SignUp = () => {
           <button
             htmlType="submit"
             type="submit"
+            disabled={isLoading}
             style={{
               width: "100%",
               height: 45,
@@ -125,7 +142,7 @@ const SignUp = () => {
             }}
             className="flex items-center justify-center bg-[#3FAE6A] rounded-lg"
           >
-            Sign Up
+            {isLoading ? "Signing up..." : "Sign Up"}
           </button>
         </Form.Item>
       </Form>

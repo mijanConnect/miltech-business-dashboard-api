@@ -46,7 +46,7 @@ const Login = () => {
       <div className="text-center mb-8">
         <img src={image4} alt="logo" className="h-40 w-40 mx-auto" />
         <h1 className="text-[25px] font-semibold mb-[10px] mt-[20px]">
-          Admin Dashboard
+          Merchant Dashboard
         </h1>
         <p>Welcome back! Please enter your details.</p>
       </div>
@@ -66,7 +66,7 @@ const Login = () => {
           <Input.Password
             placeholder="Enter your password"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
@@ -99,6 +99,17 @@ const Login = () => {
             {isLoading ? "Signing in..." : "Sign in"}
           </button>
         </Form.Item>
+        <div className="mt-[20px]">
+          <p className="text-center text-[#1E1E1E]">
+            Don't have an account?{" "}
+            <a
+              href="/auth/signup"
+              className="text-[#3FAE6A] hover:text-[#1E1E1E] font-semibold"
+            >
+              Sign Up
+            </a>
+          </p>
+        </div>
       </Form>
     </div>
   );

@@ -48,6 +48,18 @@ export const authApi = api.injectEndpoints({
     }),
 
     // ---------------------------------------
+    // REGISTER (SIGN UP)
+    // ---------------------------------------
+    register: builder.mutation({
+      query: (payload) => ({
+        url: "/user",
+        method: "POST",
+        body: payload,
+      }),
+      transformResponse: (response) => response?.data ?? response,
+    }),
+
+    // ---------------------------------------
     // FORGOT PASSWORD
     // ---------------------------------------
     forgotPassword: builder.mutation({
@@ -122,6 +134,7 @@ export const {
   useOtpVerifyMutation,
   useResendOtpMutation,
   useLoginMutation,
+  useRegisterMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,

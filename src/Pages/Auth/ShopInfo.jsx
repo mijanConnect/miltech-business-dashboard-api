@@ -38,7 +38,11 @@ const ShopInfo = () => {
       </div>
 
       {/* Form */}
-      <Form onFinish={onFinish} layout="vertical" className="flex flex-col gap-4">
+      <Form
+        onFinish={onFinish}
+        layout="vertical"
+        className="flex flex-col gap-4"
+      >
         {/* Business Name */}
         <Form.Item
           name="businessName"
@@ -47,7 +51,7 @@ const ShopInfo = () => {
           <Input
             placeholder="Enter Business Name"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
@@ -62,7 +66,7 @@ const ShopInfo = () => {
           <Input
             placeholder="Enter Website URL"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #3FAE6A",
               borderRadius: "200px",
             }}
@@ -79,7 +83,7 @@ const ShopInfo = () => {
             className="custom-select"
             dropdownClassName="custom-dropdown"
             style={{
-              height: 40,
+              height: 45,
             }}
           >
             <Option value="usa">United States</Option>
@@ -98,7 +102,7 @@ const ShopInfo = () => {
             className="custom-select"
             dropdownClassName="custom-dropdown"
             style={{
-              height: 40,
+              height: 45,
             }}
           >
             <Option value="newyork">New York</Option>
@@ -117,7 +121,7 @@ const ShopInfo = () => {
             className="custom-select"
             dropdownClassName="custom-dropdown"
             style={{
-              height: 40,
+              height: 45,
             }}
           >
             <Option value="food">Food Delivery</Option>
@@ -142,7 +146,7 @@ const ShopInfo = () => {
               type="button"
               style={{
                 width: "100%",
-                height: 40,
+                height: 45,
                 border: "1px solid #3FAE6A",
                 borderRadius: "200px",
                 display: "flex",
