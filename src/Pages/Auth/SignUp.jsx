@@ -21,7 +21,11 @@ const SignUp = () => {
     try {
       await registerUser(payload).unwrap();
       message.success("Registration successful. Please verify OTP.");
-      navigate("/auth/otp-verification");
+      navigate(
+        `/auth/otp-verification?phone=${encodeURIComponent(
+          values.phone
+        )}&email=${encodeURIComponent(values.email)}`
+      );
     } catch (err) {
       const errorMsg = err?.data?.message || "Registration failed";
       message.error(errorMsg);
