@@ -21,7 +21,19 @@ export const customerApi = api.injectEndpoints({
       transformResponse: (response) => response,
       providesTags: ["Promo"],
     }),
+
+    // ---------------------------------------
+    // PATCH toggle promo status
+    // ---------------------------------------
+    togglePromoStatus: builder.mutation({
+      query: (id) => ({
+        url: `/promo-merchant/toggle/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Promo"],
+    }),
   }),
 });
 
-export const { useGetPromoDetailsQuery } = customerApi;
+export const { useGetPromoDetailsQuery, useTogglePromoStatusMutation } =
+  customerApi;

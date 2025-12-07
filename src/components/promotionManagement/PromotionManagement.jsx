@@ -7,7 +7,10 @@ import NewCampaign from "../promotionManagement/components/NewCampaing.jsx";
 import NotificationsModal from "../promotionManagement/components/NotificationsModal.jsx";
 import CustomTable from "../../components/common/CustomTable.jsx";
 import { useSearchParams } from "react-router-dom";
-import { useGetPromoDetailsQuery } from "../../redux/apiSlices/promoSlice.js";
+import {
+  useGetPromoDetailsQuery,
+  useTogglePromoStatusMutation,
+} from "../../redux/apiSlices/promoSlice.js";
 
 const PromotionManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,6 +32,8 @@ const PromotionManagement = () => {
     isFetching,
     error,
   } = useGetPromoDetailsQuery(queryParams);
+
+  const [togglePromoStatus] = useTogglePromoStatusMutation();
 
   console.log(response);
 
@@ -238,8 +243,8 @@ const PromotionManagement = () => {
                 backgroundColor:
                   record.status === "Active" ? "#3fae6a" : "gray",
               }}
-              onChange={(checked) => {
-                Swal.fire({
+              onChange={async (checked) => {
+                const result = await Swal.fire({
                   title: "Are you sure?",
                   text: `You are about to change status to ${
                     checked ? "Active" : "Inactive"
@@ -249,15 +254,13 @@ const PromotionManagement = () => {
                   confirmButtonColor: "#3085d6",
                   cancelButtonColor: "#d33",
                   confirmButtonText: "Yes, change it!",
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    setData((prev) =>
-                      prev.map((item) =>
-                        item.id === record.id
-                          ? { ...item, status: checked ? "Active" : "Inactive" }
-                          : item
-                      )
-                    );
+                });
+
+                if (result.isConfirmed) {
+                  try {
+                    const response = await togglePromoStatus(
+                      record.raw._id
+                    ).unwrap();
                     Swal.fire({
                       title: "Updated!",
                       text: `Status has been changed to ${
@@ -267,8 +270,16 @@ const PromotionManagement = () => {
                       timer: 1500,
                       showConfirmButton: false,
                     });
+                  } catch (error) {
+                    Swal.fire({
+                      title: "Error!",
+                      text: error?.data?.message || "Failed to update status.",
+                      icon: "error",
+                      timer: 2000,
+                      showConfirmButton: false,
+                    });
                   }
-                });
+                }
               }}
             />
           </div>
