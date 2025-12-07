@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { useGetWeeklySellReportQuery } from "../../redux/apiSlices/homeSlice";
+import { Spin } from "antd";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PieChart = () => {
   const [chartHeight, setChartHeight] = useState("200px");
+  const { data: weeklyData, isLoading, error } = useGetWeeklySellReportQuery();
 
   useEffect(() => {
     const updateChartHeight = () => {
@@ -19,12 +22,17 @@ const PieChart = () => {
     return () => window.removeEventListener("resize", updateChartHeight);
   }, []);
 
-  // 7-day raw data
-  const rawData = [50, 70, 100, 80, 40, 60, 90];
-  const total = rawData.reduce((sum, val) => sum + val, 0);
+  // Extract data from API response
+  const weeklyReport = weeklyData?.weeklyReport || [];
+  const rawData = weeklyReport.map((item) => item.totalSell);
+  const labels = weeklyReport.map((item) => item.day);
+  const total = weeklyData?.totalSell || 0;
 
   const data = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels:
+      labels.length > 0
+        ? labels
+        : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
         label: "Weekly Sale",
@@ -91,6 +99,25 @@ const PieChart = () => {
       },
     },
   };
+
+  if (isLoading) {
+    return (
+      <div
+        className="flex justify-center items-center"
+        style={{ height: chartHeight }}
+      >
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-500">
+        Failed to load weekly sell report
+      </div>
+    );
+  }
 
   return (
     <div>
