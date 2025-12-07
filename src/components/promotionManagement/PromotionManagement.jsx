@@ -10,6 +10,7 @@ import { useSearchParams } from "react-router-dom";
 import {
   useGetPromoDetailsQuery,
   useTogglePromoStatusMutation,
+  useUpdatePromotionMutation,
 } from "../../redux/apiSlices/promoSlice.js";
 
 const PromotionManagement = () => {
@@ -34,6 +35,7 @@ const PromotionManagement = () => {
   } = useGetPromoDetailsQuery(queryParams);
 
   const [togglePromoStatus] = useTogglePromoStatusMutation();
+  const [updatePromotion] = useUpdatePromotionMutation();
 
   console.log(response);
 
@@ -100,21 +102,65 @@ const PromotionManagement = () => {
     });
   };
 
-  const handleEditSave = (updatedCampaign) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === updatedCampaign.id ? { ...item, ...updatedCampaign } : item
-      )
-    );
-    setIsEditModalVisible(false);
-    setEditingCampaign(null);
-    Swal.fire({
-      icon: "success",
-      title: "Updated!",
-      text: "Your campaign has been updated successfully.",
-      timer: 1500,
-      showConfirmButton: false,
-    });
+  const handleEditSave = async (updatedCampaign) => {
+    try {
+      const formData = new FormData();
+
+      // Check if all days are selected
+      const promotionDays = updatedCampaign.promotionDays || [];
+      const isAllDays = promotionDays.length === 7;
+
+      // Create the data object matching the required structure
+      const dataObj = {
+        name: updatedCampaign.promotionName,
+        discountPercentage: Number(updatedCampaign.discountPercentage),
+        promotionType:
+          updatedCampaign.promotionType?.toLowerCase() || "seasonal",
+        customerSegment:
+          updatedCampaign.customerSegment?.toLowerCase().replace(/\s+/g, "_") ||
+          "all_customer",
+        startDate: updatedCampaign.startDate
+          ? new Date(updatedCampaign.startDate).toISOString()
+          : null,
+        endDate: updatedCampaign.endDate
+          ? new Date(
+              new Date(updatedCampaign.endDate).setHours(23, 59, 59, 999)
+            ).toISOString()
+          : null,
+        availableDays: isAllDays ? ["all"] : promotionDays,
+      };
+
+      // Append data as JSON string
+      formData.append("data", JSON.stringify(dataObj));
+
+      // Append image if exists
+      if (updatedCampaign.imageFile) {
+        formData.append("image", updatedCampaign.imageFile);
+      }
+
+      await updatePromotion({
+        id: editingCampaign.raw._id,
+        formData,
+      }).unwrap();
+
+      setIsEditModalVisible(false);
+      setEditingCampaign(null);
+      Swal.fire({
+        icon: "success",
+        title: "Updated!",
+        text: "Your campaign has been updated successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: error?.data?.message || "Failed to update campaign.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    }
   };
 
   const handleEditCancel = () => {

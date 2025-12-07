@@ -32,8 +32,23 @@ export const customerApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Promo"],
     }),
+
+    // ---------------------------------------
+    // PATCH update promotion
+    // ---------------------------------------
+    updatePromotion: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/promo-merchant/${id}`,
+        method: "PATCH",
+        body: formData,
+      }),
+      invalidatesTags: ["Promo"],
+    }),
   }),
 });
 
-export const { useGetPromoDetailsQuery, useTogglePromoStatusMutation } =
-  customerApi;
+export const {
+  useGetPromoDetailsQuery,
+  useTogglePromoStatusMutation,
+  useUpdatePromotionMutation,
+} = customerApi;

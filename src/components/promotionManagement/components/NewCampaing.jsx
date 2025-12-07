@@ -36,17 +36,21 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
   useState(() => {
     if (isEdit && editData) {
       // Handle availableDays or promotionDays
-      const rawDays = editData.raw?.availableDays || editData.selectedDays || editData.promotionDays || [];
-      
+      const rawDays =
+        editData.raw?.availableDays ||
+        editData.selectedDays ||
+        editData.promotionDays ||
+        [];
+
       // Check if "all" is in the array or if all 7 days are present
-      const isAllDays = 
-        (Array.isArray(rawDays) && rawDays.includes("all")) || 
+      const isAllDays =
+        (Array.isArray(rawDays) && rawDays.includes("all")) ||
         (Array.isArray(rawDays) && rawDays.length === 7);
-      
-      const initialDays = isAllDays 
-        ? daysOptions.map((day) => day.value) 
+
+      const initialDays = isAllDays
+        ? daysOptions.map((day) => day.value)
         : rawDays;
-      
+
       setCheckedDays(initialDays);
       setCheckAll(isAllDays || initialDays.length === daysOptions.length);
 
@@ -54,6 +58,18 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
         editData.startDate && editData.endDate
           ? [dayjs(editData.startDate), dayjs(editData.endDate)]
           : null;
+
+      // Set existing image if available
+      if (editData.raw?.image) {
+        setUploadedImage([
+          {
+            uid: "-1",
+            name: "image.png",
+            status: "done",
+            url: editData.raw.image,
+          },
+        ]);
+      }
 
       form.setFieldsValue({
         promotionName: editData.promotionName,
@@ -87,6 +103,7 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
       endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
       thumbnail,
       promotionDays: values.promotionDays || [],
+      imageFile: uploadedImage[0]?.originFileObj || null,
     };
 
     // If editing, include the id
@@ -97,6 +114,7 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
     onSave(campaignData);
     form.resetFields();
     setThumbnail("");
+    setUploadedImage([]);
   };
 
   // Image upload validation
@@ -109,7 +127,9 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
   };
 
   const handleUploadChange = ({ fileList }) => {
-    setUploadedImage(fileList);
+    // Only keep the latest file (for replacement)
+    const newFileList = fileList.slice(-1);
+    setUploadedImage(newFileList);
   };
 
   const handleCheckAllChange = (e) => {
@@ -276,15 +296,15 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
               return isJpgOrPng && isLt2M;
             }}
             onChange={handleUploadChange}
-            onRemove={(file) => {
-              setUploadedImage((prev) =>
-                prev.filter((f) => f.uid !== file.uid)
-              );
+            onRemove={() => {
+              setUploadedImage([]);
             }}
             maxCount={1}
             accept=".jpg,.jpeg,.png" // Restrict file picker to JPG/PNG
           >
-            <Button icon={<UploadOutlined />}>Click to Upload</Button>
+            <Button icon={<UploadOutlined />}>
+              {uploadedImage.length > 0 ? "Replace Image" : "Click to Upload"}
+            </Button>
           </Upload>
           <p className="text-sm text-gray-500 mt-1">
             Allowed file types: JPG, PNG. Maximum file size: 2MB.
