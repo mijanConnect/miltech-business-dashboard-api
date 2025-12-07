@@ -35,9 +35,20 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
   // Initialize form with editData if in edit mode
   useState(() => {
     if (isEdit && editData) {
-      const initialDays = editData.promotionDays || [];
+      // Handle availableDays or promotionDays
+      const rawDays = editData.raw?.availableDays || editData.selectedDays || editData.promotionDays || [];
+      
+      // Check if "all" is in the array or if all 7 days are present
+      const isAllDays = 
+        (Array.isArray(rawDays) && rawDays.includes("all")) || 
+        (Array.isArray(rawDays) && rawDays.length === 7);
+      
+      const initialDays = isAllDays 
+        ? daysOptions.map((day) => day.value) 
+        : rawDays;
+      
       setCheckedDays(initialDays);
-      setCheckAll(initialDays.length === daysOptions.length);
+      setCheckAll(isAllDays || initialDays.length === daysOptions.length);
 
       const dateRange =
         editData.startDate && editData.endDate
