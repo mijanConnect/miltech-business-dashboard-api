@@ -72,9 +72,12 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
 
       form.setFieldsValue({
         promotionName: editData.promotionName,
-        promotionType: editData.promotionType,
+        promotionType:
+          editData.raw?.promotionType || editData.promotionType?.toLowerCase(),
         customerReach: editData.customerReach,
-        customerSegment: editData.customerSegment,
+        customerSegment:
+          editData.raw?.customerSegment ||
+          editData.customerSegment?.toLowerCase(),
         discountPercentage: editData.discountPercentage,
         dateRange: dateRange,
         promotionDays: initialDays,

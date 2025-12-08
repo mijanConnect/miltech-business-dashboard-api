@@ -86,8 +86,8 @@ const PromotionManagement = () => {
       key: item._id,
       id: index + 1 + (page - 1) * limit,
       promotionName: item.name,
-      promotionType: getPromotionTypeLabel(item.promotionType),
-      customerSegment: getCustomerSegmentLabel(item.customerSegment),
+      promotionType: item.promotionType,
+      customerSegment: item.customerSegment,
       discountPercentage: item.discountPercentage,
       startDate: item.startDate,
       endDate: item.endDate,
@@ -309,14 +309,16 @@ const PromotionManagement = () => {
       dataIndex: "promotionType",
       key: "promotionType",
       align: "center",
-      render: (type) => <Tag color="blue">{type}</Tag>,
+      render: (type) => <Tag color="blue">{getPromotionTypeLabel(type)}</Tag>,
     },
     {
       title: "Customer Segment",
       dataIndex: "customerSegment",
       key: "customerSegment",
       align: "center",
-      render: (segment) => <Tag color="purple">{segment}</Tag>,
+      render: (segment) => (
+        <Tag color="purple">{getCustomerSegmentLabel(segment)}</Tag>
+      ),
     },
     {
       title: "Discount Percentage",
@@ -380,7 +382,7 @@ const PromotionManagement = () => {
                   key={index}
                   className="border border-primary px-2 py-0 rounded-[4px] text-xs"
                 >
-                  {day.substring(0, 3)}
+                  {day.charAt(0).toUpperCase() + day.slice(1)}
                 </span>
               ))
             ) : (
