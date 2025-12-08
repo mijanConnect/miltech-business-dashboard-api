@@ -9,31 +9,30 @@ import {
   Upload,
   message,
 } from "antd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const daysOptions = [
-  { label: "Mon", value: "Monday" },
-  { label: "Tue", value: "Tuesday" },
-  { label: "Wed", value: "Wednesday" },
-  { label: "Thu", value: "Thursday" },
-  { label: "Fri", value: "Friday" },
-  { label: "Sat", value: "Saturday" },
-  { label: "Sun", value: "Sunday" },
+  { label: "Mon", value: "mon" },
+  { label: "Tue", value: "tue" },
+  { label: "Wed", value: "wed" },
+  { label: "Thu", value: "thu" },
+  { label: "Fri", value: "fri" },
+  { label: "Sat", value: "sat" },
+  { label: "Sun", value: "sun" },
 ];
 
 const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
   const [form] = Form.useForm();
   const [thumbnail, setThumbnail] = useState("");
   const [uploadedImage, setUploadedImage] = useState([]);
-  const [checkedDays, setCheckedDays] = useState([]);
   const [checkAll, setCheckAll] = useState(false);
 
   // Initialize form with editData if in edit mode
-  useState(() => {
+  useEffect(() => {
     if (isEdit && editData) {
       // Handle availableDays or promotionDays
       const rawDays =
@@ -51,7 +50,6 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
         ? daysOptions.map((day) => day.value)
         : rawDays;
 
-      setCheckedDays(initialDays);
       setCheckAll(isAllDays || initialDays.length === daysOptions.length);
 
       const dateRange =
@@ -81,7 +79,7 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
         promotionDays: initialDays,
       });
     }
-  }, []);
+  }, [isEdit, editData]);
 
   const handleThumbnailChange = ({ file }) => {
     if (file.status === "done" || file.originFileObj) {
@@ -92,6 +90,8 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
   };
 
   const handleSubmit = (values) => {
+    console.log("Form values:", values);
+    console.log("Promotion Days:", values.promotionDays);
     const [startDate, endDate] = values.dateRange || [];
     const campaignData = {
       promotionName: values.promotionName,
@@ -105,6 +105,8 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
       promotionDays: values.promotionDays || [],
       imageFile: uploadedImage[0]?.originFileObj || null,
     };
+
+    console.log("Campaign Data:", campaignData);
 
     // If editing, include the id
     if (isEdit && editData) {
@@ -135,15 +137,8 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
   const handleCheckAllChange = (e) => {
     const allDays = daysOptions.map((day) => day.value);
     const newCheckedDays = e.target.checked ? allDays : [];
-    setCheckedDays(newCheckedDays);
     setCheckAll(e.target.checked);
     form.setFieldsValue({ promotionDays: newCheckedDays });
-  };
-
-  const handleDaysChange = (checkedValues) => {
-    setCheckedDays(checkedValues);
-    setCheckAll(checkedValues.length === daysOptions.length);
-    form.setFieldsValue({ promotionDays: checkedValues });
   };
 
   return (
@@ -174,10 +169,10 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
                 placeholder="Select Promotion Type"
                 className="mli-tall-select"
               >
-                <Option value="Seasonal">Seasonal</Option>
-                <Option value="Referral">Referral</Option>
-                <Option value="Flash Sale">Flash Sale</Option>
-                <Option value="Loyalty">Loyalty</Option>
+                <Option value="seasonal">Seasonal</Option>
+                <Option value="referral">Referral</Option>
+                <Option value="flash_sale">Flash Sale</Option>
+                <Option value="loyalty">Loyalty</Option>
               </Select>
             </Form.Item>
           </div>
@@ -203,16 +198,19 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
                 placeholder="Select Customer Segment"
                 className="mli-tall-select"
               >
-                <Select.Option value="New Customers">
+                <Select.Option value="vip_customer">
+                  VIP Customers
+                </Select.Option>
+                <Select.Option value="new_customer">
                   New Customers
                 </Select.Option>
-                <Select.Option value="Returning Customers">
+                <Select.Option value="returning_customer">
                   Returning Customers
                 </Select.Option>
-                <Select.Option value="Loyal Customers">
+                <Select.Option value="loyal_customer">
                   Loyal Customers
                 </Select.Option>
-                <Select.Option value="All Customers">
+                <Select.Option value="all_customer">
                   All Customers
                 </Select.Option>
               </Select>
@@ -245,28 +243,26 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
         </div>
 
         <div className="w-full mb-4 mt-4">
+          <div className="mb-2">
+            <label className="text-sm font-medium">Select Promotion Days</label>
+            <span className="text-red-500 ml-1">*</span>
+          </div>
+          <div className="mb-2">
+            <Checkbox
+              onChange={handleCheckAllChange}
+              checked={checkAll}
+              className="font-semibold"
+            >
+              All days
+            </Checkbox>
+          </div>
           <Form.Item
-            label="Select Promotion Days"
             name="promotionDays"
             rules={[
               { required: true, message: "Please select at least one day" },
             ]}
           >
-            <div>
-              <Checkbox
-                onChange={handleCheckAllChange}
-                checked={checkAll}
-                className="mb-2 font-semibold"
-              >
-                All days
-              </Checkbox>
-              <Checkbox.Group
-                options={daysOptions}
-                className="flex gap-2"
-                value={checkedDays}
-                onChange={handleDaysChange}
-              />
-            </div>
+            <Checkbox.Group options={daysOptions} className="flex gap-2" />
           </Form.Item>
         </div>
 

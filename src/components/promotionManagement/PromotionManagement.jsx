@@ -40,7 +40,7 @@ const PromotionManagement = () => {
   console.log(response);
 
   const tableData = useMemo(() => {
-    const items = response?.data?.promotions || [];
+    const items = response?.data || [];
     return items.map((item, index) => ({
       key: item._id,
       id: index + 1 + (page - 1) * limit,
@@ -53,15 +53,7 @@ const PromotionManagement = () => {
       endDate: item.endDate,
       selectedDays:
         item.availableDays && item.availableDays[0] === "all"
-          ? [
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-              "Sunday",
-            ]
+          ? ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
           : item.availableDays || item.promotionDays || [],
       status: item.status === "active" ? "Active" : "Inactive",
       raw: item,
@@ -104,10 +96,12 @@ const PromotionManagement = () => {
 
   const handleEditSave = async (updatedCampaign) => {
     try {
+      console.log("Updated Campaign:", updatedCampaign);
       const formData = new FormData();
 
       // Check if all days are selected
       const promotionDays = updatedCampaign.promotionDays || [];
+      console.log("Promotion Days Array:", promotionDays);
       const isAllDays = promotionDays.length === 7;
 
       // Create the data object matching the required structure
@@ -129,6 +123,8 @@ const PromotionManagement = () => {
           : null,
         availableDays: isAllDays ? ["all"] : promotionDays,
       };
+
+      console.log("Data Object to send:", dataObj);
 
       // Append data as JSON string
       formData.append("data", JSON.stringify(dataObj));
