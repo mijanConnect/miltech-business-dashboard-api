@@ -56,6 +56,17 @@ export const customerApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Promo"],
     }),
+
+    // ---------------------------------------
+    // DELETE promotion
+    // ---------------------------------------
+    deletePromotion: builder.mutation({
+      query: (id) => ({
+        url: `/promo-merchant/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Promo"],
+    }),
   }),
 });
 
@@ -64,4 +75,5 @@ export const {
   useTogglePromoStatusMutation,
   useUpdatePromotionMutation,
   useCreatePromotionMutation,
+  useDeletePromotionMutation,
 } = customerApi;

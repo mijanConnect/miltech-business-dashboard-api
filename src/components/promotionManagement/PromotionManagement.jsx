@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Button, Switch, Tooltip, Modal } from "antd";
 import { FaEdit } from "react-icons/fa";
 import { AiOutlineEye } from "react-icons/ai";
+import { MdDelete } from "react-icons/md";
 import Swal from "sweetalert2";
 import NewCampaign from "../promotionManagement/components/NewCampaing.jsx";
 import NotificationsModal from "../promotionManagement/components/NotificationsModal.jsx";
@@ -14,6 +15,7 @@ import {
   useTogglePromoStatusMutation,
   useUpdatePromotionMutation,
   useCreatePromotionMutation,
+  useDeletePromotionMutation,
 } from "../../redux/apiSlices/promoSlice.js";
 
 const PromotionManagement = () => {
@@ -40,6 +42,7 @@ const PromotionManagement = () => {
   const [togglePromoStatus] = useTogglePromoStatusMutation();
   const [updatePromotion] = useUpdatePromotionMutation();
   const [createPromotion] = useCreatePromotionMutation();
+  const [deletePromotion] = useDeletePromotionMutation();
 
   console.log(response);
 
@@ -226,6 +229,40 @@ const PromotionManagement = () => {
     setSelectedRecord(null);
   };
 
+  const handleDeleteClick = async (record) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `You are about to delete "${record.promotionName}". This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deletePromotion(record.raw._id).unwrap();
+        Swal.fire({
+          title: "Deleted!",
+          text: "Promotion has been deleted successfully.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        Swal.fire({
+          title: "Error!",
+          text: error?.data?.message || "Failed to delete promotion.",
+          icon: "error",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    }
+  };
+
   const columns = [
     { title: "SL", dataIndex: "id", key: "id", align: "center" },
     {
@@ -323,7 +360,7 @@ const PromotionManagement = () => {
       title: "Action",
       key: "action",
       align: "center",
-      width: 120,
+      width: 140,
       render: (_, record) => (
         <div className="py-[10px] px-[10px] border border-primary rounded-md">
           <div className="flex gap-2 justify-between align-middle">
@@ -341,6 +378,14 @@ const PromotionManagement = () => {
                 className="text-primary hover:text-green-700 text-[17px]"
               >
                 <FaEdit />
+              </button>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <button
+                onClick={() => handleDeleteClick(record)}
+                className="text-red-500 hover:text-red-700 text-[17px]"
+              >
+                <MdDelete />
               </button>
             </Tooltip>
             <Switch
