@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button, Switch, Tooltip, Modal, Tag } from "antd";
 import { FaEdit } from "react-icons/fa";
 import { AiOutlineEye } from "react-icons/ai";
@@ -44,8 +44,19 @@ const getPromotionTypeLabel = (value) => {
 const PromotionManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchText, setSearchText] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(() => {
+    const urlPage = searchParams.get("page");
+    return urlPage ? parseInt(urlPage, 10) : 1;
+  });
+  const [limit, setLimit] = useState(() => {
+    const urlLimit = searchParams.get("limit");
+    return urlLimit ? parseInt(urlLimit, 10) : 10;
+  });
+
+  // Sync page and limit changes to URL
+  useEffect(() => {
+    setSearchParams({ page, limit });
+  }, [page, limit, setSearchParams]);
 
   const queryParams = [
     { name: "page", value: page },
