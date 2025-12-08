@@ -1,6 +1,29 @@
 import { Modal, Button, Descriptions, Image, Tag, Space } from "antd";
 import { getImageUrl } from "../../common/imageUrl";
 
+const CUSTOMER_SEGMENT_MAP = {
+  vip_customer: "VIP Customers",
+  new_customer: "New Customers",
+  returning_customer: "Returning Customers",
+  loyal_customer: "Loyal Customers",
+  all_customer: "All Customers",
+};
+
+const PROMOTION_TYPE_MAP = {
+  seasonal: "Seasonal",
+  referral: "Referral",
+  flash_sale: "Flash Sale",
+  loyalty: "Loyalty",
+};
+
+const getCustomerSegmentLabel = (value) => {
+  return CUSTOMER_SEGMENT_MAP[value] || value;
+};
+
+const getPromotionTypeLabel = (value) => {
+  return PROMOTION_TYPE_MAP[value] || value;
+};
+
 const DetailsModal = ({ visible, onCancel, record }) => {
   if (!record) {
     return null;
@@ -29,7 +52,7 @@ const DetailsModal = ({ visible, onCancel, record }) => {
           </Descriptions.Item>
 
           <Descriptions.Item label="Promotion Type">
-            <Tag color="blue">{raw?.promotionType}</Tag>
+            <Tag color="blue">{getPromotionTypeLabel(raw?.promotionType)}</Tag>
           </Descriptions.Item>
 
           <Descriptions.Item label="Status">
@@ -39,7 +62,9 @@ const DetailsModal = ({ visible, onCancel, record }) => {
           </Descriptions.Item>
 
           <Descriptions.Item label="Customer Segment" span={2}>
-            {raw?.customerSegment}
+            <Tag color="purple">
+              {getCustomerSegmentLabel(raw?.customerSegment)}
+            </Tag>
           </Descriptions.Item>
 
           <Descriptions.Item label="Discount Percentage">

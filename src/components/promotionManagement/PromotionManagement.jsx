@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Button, Switch, Tooltip, Modal } from "antd";
+import { Button, Switch, Tooltip, Modal, Tag } from "antd";
 import { FaEdit } from "react-icons/fa";
 import { AiOutlineEye } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
@@ -17,6 +17,29 @@ import {
   useCreatePromotionMutation,
   useDeletePromotionMutation,
 } from "../../redux/apiSlices/promoSlice.js";
+
+const CUSTOMER_SEGMENT_MAP = {
+  vip_customer: "VIP Customers",
+  new_customer: "New Customers",
+  returning_customer: "Returning Customers",
+  loyal_customer: "Loyal Customers",
+  all_customer: "All Customers",
+};
+
+const PROMOTION_TYPE_MAP = {
+  seasonal: "Seasonal",
+  referral: "Referral",
+  flash_sale: "Flash Sale",
+  loyalty: "Loyalty",
+};
+
+const getCustomerSegmentLabel = (value) => {
+  return CUSTOMER_SEGMENT_MAP[value] || value;
+};
+
+const getPromotionTypeLabel = (value) => {
+  return PROMOTION_TYPE_MAP[value] || value;
+};
 
 const PromotionManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,9 +75,8 @@ const PromotionManagement = () => {
       key: item._id,
       id: index + 1 + (page - 1) * limit,
       promotionName: item.name,
-      promotionType: item.promotionType,
-      customerReach: item.customerReach,
-      customerSegment: item.customerSegment,
+      promotionType: getPromotionTypeLabel(item.promotionType),
+      customerSegment: getCustomerSegmentLabel(item.customerSegment),
       discountPercentage: item.discountPercentage,
       startDate: item.startDate,
       endDate: item.endDate,
@@ -276,12 +298,14 @@ const PromotionManagement = () => {
       dataIndex: "promotionType",
       key: "promotionType",
       align: "center",
+      render: (type) => <Tag color="blue">{type}</Tag>,
     },
     {
       title: "Customer Segment",
       dataIndex: "customerSegment",
       key: "customerSegment",
       align: "center",
+      render: (segment) => <Tag color="purple">{segment}</Tag>,
     },
     {
       title: "Discount Percentage",
@@ -304,13 +328,13 @@ const PromotionManagement = () => {
           <div className="flex flex-col items-start justify-center gap-1">
             <p>
               <span className="font-bold">Start Date: </span>
-              <span className="border border-primary px-[5px] py-[1px] rounded-sm">
+              <span className="border border-primary px-[5px] py-[1px] rounded-[4px]">
                 {start}
               </span>
             </p>
             <p>
               <span className="font-bold">End Date: </span>
-              <span className="border border-primary px-[5px] py-[1px] rounded-sm">
+              <span className="border border-primary px-[5px] py-[1px] rounded-[4px]">
                 {end}
               </span>
             </p>
@@ -330,7 +354,7 @@ const PromotionManagement = () => {
         if (isAllDays) {
           return (
             <div className="flex justify-center">
-              <span className="border border-primary px-3 py-1 rounded-sm text-xs font-semibold bg-primary/10">
+              <span className="border border-primary px-3 py-1 rounded-[4px] text-xs font-semibold bg-primary/10">
                 All Days
               </span>
             </div>
@@ -343,7 +367,7 @@ const PromotionManagement = () => {
               days.map((day, index) => (
                 <span
                   key={index}
-                  className="border border-primary px-2 py-0 rounded-sm text-xs"
+                  className="border border-primary px-2 py-0 rounded-[4px] text-xs"
                 >
                   {day.substring(0, 3)}
                 </span>

@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { getImageUrl } from "../../common/imageUrl";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -64,7 +65,7 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
             uid: "-1",
             name: "image.png",
             status: "done",
-            url: editData.raw.image,
+            url: getImageUrl(editData.raw.image),
           },
         ]);
       }
