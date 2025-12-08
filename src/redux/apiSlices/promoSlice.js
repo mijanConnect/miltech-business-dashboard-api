@@ -44,6 +44,18 @@ export const customerApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Promo"],
     }),
+
+    // ---------------------------------------
+    // POST create promotion
+    // ---------------------------------------
+    createPromotion: builder.mutation({
+      query: (formData) => ({
+        url: `/promo-merchant`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Promo"],
+    }),
   }),
 });
 
@@ -51,4 +63,5 @@ export const {
   useGetPromoDetailsQuery,
   useTogglePromoStatusMutation,
   useUpdatePromotionMutation,
+  useCreatePromotionMutation,
 } = customerApi;

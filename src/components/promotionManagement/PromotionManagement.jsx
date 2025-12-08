@@ -11,6 +11,7 @@ import {
   useGetPromoDetailsQuery,
   useTogglePromoStatusMutation,
   useUpdatePromotionMutation,
+  useCreatePromotionMutation,
 } from "../../redux/apiSlices/promoSlice.js";
 
 const PromotionManagement = () => {
@@ -36,6 +37,7 @@ const PromotionManagement = () => {
 
   const [togglePromoStatus] = useTogglePromoStatusMutation();
   const [updatePromotion] = useUpdatePromotionMutation();
+  const [createPromotion] = useCreatePromotionMutation();
 
   console.log(response);
 
@@ -79,19 +81,60 @@ const PromotionManagement = () => {
   const [isNotifyModalVisible, setIsNotifyModalVisible] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState(null);
 
-  const handleAddCampaign = (newCampaign) => {
-    setData((prev) => [
-      ...prev,
-      { id: prev.length + 1, status: "Active", ...newCampaign },
-    ]);
-    setIsNewCampaignModalVisible(false);
-    Swal.fire({
-      icon: "success",
-      title: "Campaign Added!",
-      text: "Your new campaign has been added successfully.",
-      timer: 1500,
-      showConfirmButton: false,
-    });
+  const handleAddCampaign = async (newCampaign) => {
+    try {
+      const formData = new FormData();
+
+      // Check if all days are selected
+      const promotionDays = newCampaign.promotionDays || [];
+      const isAllDays = promotionDays.length === 7;
+
+      // Create the data object matching the required structure
+      const dataObj = {
+        name: newCampaign.promotionName,
+        discountPercentage: Number(newCampaign.discountPercentage),
+        promotionType: newCampaign.promotionType?.toLowerCase() || "seasonal",
+        customerSegment:
+          newCampaign.customerSegment?.toLowerCase().replace(/\s+/g, "_") ||
+          "all_customer",
+        startDate: newCampaign.startDate
+          ? new Date(newCampaign.startDate).toISOString()
+          : null,
+        endDate: newCampaign.endDate
+          ? new Date(
+              new Date(newCampaign.endDate).setHours(23, 59, 59, 999)
+            ).toISOString()
+          : null,
+        availableDays: isAllDays ? ["all"] : promotionDays,
+      };
+
+      // Append data as JSON string
+      formData.append("data", JSON.stringify(dataObj));
+
+      // Append image if exists
+      if (newCampaign.imageFile) {
+        formData.append("image", newCampaign.imageFile);
+      }
+
+      await createPromotion(formData).unwrap();
+
+      setIsNewCampaignModalVisible(false);
+      Swal.fire({
+        icon: "success",
+        title: "Campaign Added!",
+        text: "Your new campaign has been added successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: error?.data?.message || "Failed to create campaign.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    }
   };
 
   const handleEditSave = async (updatedCampaign) => {
