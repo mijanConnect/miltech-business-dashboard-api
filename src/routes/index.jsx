@@ -13,7 +13,6 @@ import Notifications from "../Pages/Dashboard/Notifications";
 import OtpVerification from "../Pages/Auth/OtpVerification";
 import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
 import Home from "../Pages/Dashboard/Home";
-import SaleRepsManagement from "../components/SalesRepsManagement/SaleRepsManagement";
 import CustomerManagement from "../components/customerManagement/customerManagement";
 import TierSystem from "../components/TierSystem/TierSystem";
 import PromotionManagement from "../components/promotionManagement/PromotionManagement";
@@ -23,6 +22,7 @@ import PrivacyPolicy from "../Pages/Dashboard/PrivacyPolicy";
 import TermsAndConditions from "../Pages/Dashboard/TermsAndCondition";
 import NotFound from "../NotFound";
 import PrivateRoute from "./ProtectedRoute";
+import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
   {
@@ -41,7 +41,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/sell-management",
-        element: <SaleRepsManagement />,
+        element: <SalesRepsManagementTable />,
       },
       {
         path: "/customer-management",

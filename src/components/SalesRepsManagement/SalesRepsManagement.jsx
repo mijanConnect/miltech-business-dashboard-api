@@ -1,16 +1,10 @@
 import React, { useState } from "react";
 import { Table, Select, Input, Button, Tooltip, message, Form } from "antd";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import NewSell from "./NewSell";
+import NewSell from "./components/NewSell";
 import dayjs from "dayjs"; // Import dayjs
 
 const { Option } = Select;
-
-const giftCardsData = [
-  { id: 1, name: "Gift Card #1234", points: 500 },
-  { id: 2, name: "Gift Card #5678", points: 300 },
-  { id: 3, name: "Gift Card #9012", points: 700 },
-];
 
 const SalesRepsManagementTable = () => {
   const [selectedCards, setSelectedCards] = useState([]);
