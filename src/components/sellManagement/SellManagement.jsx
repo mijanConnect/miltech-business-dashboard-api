@@ -6,7 +6,7 @@ import dayjs from "dayjs"; // Import dayjs
 
 const { Option } = Select;
 
-const SalesRepsManagementTable = () => {
+const SellManagement = () => {
   const [selectedCards, setSelectedCards] = useState([]);
   const [data, setData] = useState([
     {
@@ -234,4 +234,4 @@ const SalesRepsManagementTable = () => {
   );
 };
 
-export default SalesRepsManagementTable;
+export default SellManagement;

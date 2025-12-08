@@ -22,7 +22,7 @@ import PrivacyPolicy from "../Pages/Dashboard/PrivacyPolicy";
 import TermsAndConditions from "../Pages/Dashboard/TermsAndCondition";
 import NotFound from "../NotFound";
 import PrivateRoute from "./ProtectedRoute";
-import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
+import SellManagement from "../components/sellManagement/SellManagement";
 
 const router = createBrowserRouter([
   {
@@ -41,7 +41,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/sell-management",
-        element: <SalesRepsManagementTable />,
+        element: <SellManagement />,
       },
       {
         path: "/customer-management",
