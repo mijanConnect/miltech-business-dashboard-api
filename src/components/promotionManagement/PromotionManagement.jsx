@@ -2,9 +2,11 @@
 import { useMemo, useState } from "react";
 import { Button, Switch, Tooltip, Modal } from "antd";
 import { FaEdit } from "react-icons/fa";
+import { AiOutlineEye } from "react-icons/ai";
 import Swal from "sweetalert2";
 import NewCampaign from "../promotionManagement/components/NewCampaing.jsx";
 import NotificationsModal from "../promotionManagement/components/NotificationsModal.jsx";
+import DetailsModal from "../promotionManagement/components/DetailsModal.jsx";
 import CustomTable from "../../components/common/CustomTable.jsx";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -79,7 +81,9 @@ const PromotionManagement = () => {
     useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isNotifyModalVisible, setIsNotifyModalVisible] = useState(false);
+  const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState(null);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   const handleAddCampaign = async (newCampaign) => {
     try {
@@ -212,6 +216,16 @@ const PromotionManagement = () => {
     setIsEditModalVisible(true);
   };
 
+  const handleViewClick = (record) => {
+    setSelectedRecord(record);
+    setIsDetailsModalVisible(true);
+  };
+
+  const handleDetailsCancel = () => {
+    setIsDetailsModalVisible(false);
+    setSelectedRecord(null);
+  };
+
   const columns = [
     { title: "SL", dataIndex: "id", key: "id", align: "center" },
     {
@@ -309,10 +323,18 @@ const PromotionManagement = () => {
       title: "Action",
       key: "action",
       align: "center",
-      width: 100,
+      width: 120,
       render: (_, record) => (
         <div className="py-[10px] px-[10px] border border-primary rounded-md">
           <div className="flex gap-2 justify-between align-middle">
+            <Tooltip title="View">
+              <button
+                onClick={() => handleViewClick(record)}
+                className="text-primary hover:text-blue-700 text-[17px]"
+              >
+                <AiOutlineEye />
+              </button>
+            </Tooltip>
             <Tooltip title="Edit">
               <button
                 onClick={() => handleEditClick(record)}
@@ -446,6 +468,13 @@ const PromotionManagement = () => {
       <NotificationsModal
         visible={isNotifyModalVisible}
         onCancel={() => setIsNotifyModalVisible(false)}
+      />
+
+      {/* Details Modal */}
+      <DetailsModal
+        visible={isDetailsModalVisible}
+        onCancel={handleDetailsCancel}
+        record={selectedRecord}
       />
     </div>
   );
