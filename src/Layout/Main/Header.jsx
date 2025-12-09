@@ -63,9 +63,9 @@ const Header = ({ toggleSidebar, isMobile }) => {
         <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="flex flex-row gap-1">
-              <p>Hello,</p>{" "}
+              <p></p>{" "}
               <p className="text-[16px] font-semibold">
-                {user?.firstName || ""}
+                {user?.businessName || ""}
               </p>
             </div>
             <img

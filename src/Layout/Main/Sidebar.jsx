@@ -13,6 +13,8 @@ import {
   Settings,
 } from "../../components/common/Svg";
 import image4 from "../../assets/image4.png";
+import { useUser } from "../../provider/User";
+import { getImageUrl } from "../../components/common/imageUrl";
 
 const Sidebar = ({ collapsed, setCollapsed }) => {
   const location = useLocation();
@@ -22,6 +24,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [logo, setLogo] = useState(image4); // state for logo
   const navigate = useNavigate();
+  const user = useUser();
 
   const showLogoutConfirm = () => setIsLogoutModalOpen(true);
   const handleLogout = () => {
@@ -194,7 +197,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       {!collapsed && (
         <div className="flex flex-col items-center py-4">
           <Link to={"/"}>
-            <img src={logo} alt="logo" className="w-40 h-40 object-contain" />
+            <img
+              src={getImageUrl(user?.user?.profile)}
+              alt="logo"
+              className="w-40 h-40 object-contain"
+            />
           </Link>
         </div>
       )}

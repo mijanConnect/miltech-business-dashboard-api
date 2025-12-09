@@ -10,6 +10,10 @@ import {
   Upload,
 } from "antd";
 import { useEffect, useState } from "react";
+import { useUser } from "../../../provider/User";
+import { useUpdateProfileMutation } from "../../../redux/apiSlices/authSlice";
+import { getImageUrl } from "../../../components/common/imageUrl";
+import Swal from "sweetalert2";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -18,36 +22,47 @@ const UserProfile = () => {
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState(null);
   const [fileList, setFileList] = useState([]);
+  const [coverFileList, setCoverFileList] = useState([]);
+  const [logoFileList, setLogoFileList] = useState([]);
+  const { user } = useUser();
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
-  // Dummy data (to be used as the default data)
-  const dummyData = {
-    username: "Mijan",
-    company: "Bergur King",
-    email: "mijan17634@gmail.com",
-    contact: "+8801234567890",
-    url: "www.example.com",
-    address: "1234 Main St, Springfield, USA",
-    service: "All Services",
-    aboutUs: "We are a technology company providing IT solutions worldwide.",
-    profileImage: "https://i.ibb.co/Qjf2hxsf/images-2.jpg",
-  };
+  console.log(user);
 
+  // Use actual user data from context
   useEffect(() => {
-    // Set initial values and the profile image if it exists
-    form.setFieldsValue(dummyData);
+    if (user) {
+      form.setFieldsValue({
+        username: user.firstName || "",
+        businessName: user.businessName || "",
+        email: user.email || "",
+        contact: user.phone || "",
+        url: user.website || "",
+        address: user.address || "",
+        service: user.service || "",
+        location: user.location || "",
+        country: user.country || "",
+        city: user.city || "",
+        about: user.about || "",
+        coverPhoto: user.coverPhoto || "",
+        profile: user.profile || "",
+      });
 
-    if (dummyData.profileImage) {
-      setImageUrl(dummyData.profileImage);
-      setFileList([
-        {
-          uid: "-1",
-          name: "profile.jpg",
-          status: "done",
-          url: dummyData.profileImage,
-        },
-      ]);
+      // Set profile image if available
+      if (user.profile) {
+        const imageSource = getImageUrl(user.profile);
+        setImageUrl(imageSource);
+        setFileList([
+          {
+            uid: "-1",
+            name: "profile.jpg",
+            status: "done",
+            url: imageSource,
+          },
+        ]);
+      }
     }
-  }, [form]);
+  }, [user, form]);
 
   // Clean up blob URLs when component unmounts
   useEffect(() => {
@@ -58,28 +73,67 @@ const UserProfile = () => {
     };
   }, [imageUrl]);
 
-  const onFinish = (values) => {
-    const imageFile = fileList.length > 0 ? fileList[0].originFileObj : null;
+  const onFinish = async (values) => {
+    try {
+      const profileFile =
+        fileList.length > 0 ? fileList[0].originFileObj : null;
+      const coverFile =
+        coverFileList.length > 0 ? coverFileList[0].originFileObj : null;
+      const logoFile =
+        logoFileList.length > 0 ? logoFileList[0].originFileObj : null;
 
-    console.log("Form Values on Submit:", values);
-    console.log("Image File:", imageFile);
+      // Create FormData for files
+      const formData = new FormData();
 
-    const formData = new FormData();
-    Object.keys(values).forEach((key) => {
-      formData.append(key, values[key]);
-    });
+      // Append text data
+      formData.append("firstName", values.username);
+      formData.append("businessName", values.businessName);
+      formData.append("email", values.email);
+      formData.append("phone", values.contact);
+      formData.append("website", values.url);
+      formData.append("address", values.address);
+      formData.append("service", values.service);
+      formData.append("country", values.country);
+      formData.append("city", values.city);
+      formData.append("about", values.about);
 
-    if (imageFile) {
-      formData.append("profileImage", imageFile);
-    } else if (imageUrl) {
-      formData.append("profileImageUrl", imageUrl);
+      // Append files
+      if (profileFile) {
+        formData.append("profile", profileFile);
+      }
+
+      if (coverFile) {
+        formData.append("coverPhoto", coverFile);
+      }
+
+      if (logoFile) {
+        formData.append("profile", logoFile);
+      }
+
+      console.log("Form Data to send:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ": " + pair[1]);
+      }
+
+      await updateProfile(formData).unwrap();
+
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Profile updated successfully!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: error?.data?.message || "Failed to update profile",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      console.error("Error updating profile:", error);
     }
-
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]);
-    }
-
-    message.success("Profile Updated Successfully!");
   };
 
   const handleImageChange = ({ fileList: newFileList }) => {
@@ -97,6 +151,16 @@ const UserProfile = () => {
     } else {
       setImageUrl(null);
     }
+  };
+
+  const handleCoverImageChange = ({ fileList: newFileList }) => {
+    const limitedFileList = newFileList.slice(-1);
+    setCoverFileList(limitedFileList);
+  };
+
+  const handleLogoImageChange = ({ fileList: newFileList }) => {
+    const limitedFileList = newFileList.slice(-1);
+    setLogoFileList(limitedFileList);
   };
 
   const beforeUpload = (file) => {
@@ -149,7 +213,7 @@ const UserProfile = () => {
                 )}
               </Upload>
             </Form.Item>
-            <h2 className="text-[24px] font-bold">{dummyData.username}</h2>
+            <h2 className="text-[24px] font-bold">{user?.businessName}</h2>
           </div>
           <div className="flex justify-between gap-5">
             <div className="w-full flex flex-col gap-4">
@@ -165,16 +229,19 @@ const UserProfile = () => {
                 />
               </Form.Item>
 
-              {/* Company */}
+              {/* Comapany */}
               <Form.Item
-                name="company"
-                label="Company"
+                name="businessName"
+                label="Business Name"
                 rules={[
-                  { required: true, message: "Please enter your company" },
+                  {
+                    required: true,
+                    message: "Please enter your business name",
+                  },
                 ]}
               >
                 <Input
-                  placeholder="Enter your company name"
+                  placeholder="Enter your business name"
                   className="mli-tall-input"
                 />
               </Form.Item>
@@ -207,52 +274,6 @@ const UserProfile = () => {
                   className="mli-tall-input"
                 />
               </Form.Item>
-
-              {/* Upload Image */}
-              <Form.Item
-                name="image"
-                label="(JPG/PNG only) Max upload size: 2 MB"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please upload an image (JPG/PNG only)",
-                  },
-                ]}
-              >
-                <Upload
-                  beforeUpload={(file) => {
-                    const isJpgOrPng =
-                      file.type === "image/jpeg" || file.type === "image/png";
-                    if (!isJpgOrPng) {
-                      message.error("You can only upload JPG/PNG files!");
-                      return Upload.LIST_IGNORE;
-                    }
-                    return false; // ✅ Prevent auto-upload
-                  }}
-                  maxCount={1}
-                  accept=".jpg,.jpeg,.png"
-                  className="w-full"
-                >
-                  <button
-                    type="button"
-                    style={{
-                      width: "100%",
-                      height: 30,
-                      border: "1px solid #3FAE6A",
-                      borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      background: "#fff",
-                      cursor: "pointer",
-                      padding: "0 16px",
-                    }}
-                  >
-                    <span>Upload Marchant Logo </span>
-                    <UploadOutlined />
-                  </button>
-                </Upload>
-              </Form.Item>
             </div>
             <div className="w-full flex flex-col gap-4">
               {/* Website URL */}
@@ -269,20 +290,6 @@ const UserProfile = () => {
                 />
               </Form.Item>
 
-              {/* Address */}
-              <Form.Item
-                name="address"
-                label="Address"
-                rules={[
-                  { required: true, message: "Please enter your address" },
-                ]}
-              >
-                <Input
-                  placeholder="Enter your address"
-                  className="mli-tall-input"
-                />
-              </Form.Item>
-
               {/* Service Dropdown */}
               <Form.Item
                 name="service"
@@ -295,10 +302,6 @@ const UserProfile = () => {
                   placeholder="Select your service"
                   className="mli-tall-select"
                 >
-                  {/* <Option value="IT Services">IT Services</Option>
-                  <Option value="Consulting">Consulting</Option>
-                  <Option value="Marketing">Marketing</Option>
-                  <Option value="Finance">Finance</Option> */}
                   <Option value="Food & beverages">Food & beverages</Option>
                   <Option value="Apparel and Footwear">
                     Apparel and Footwear
@@ -318,20 +321,43 @@ const UserProfile = () => {
                 </Select>
               </Form.Item>
 
-              {/* Service Dropdown */}
+              {/* Country */}
               <Form.Item
-                name="location"
-                label="Location"
+                name="country"
+                label="Country"
                 rules={[
-                  { required: true, message: "Please select your location" },
+                  { required: true, message: "Please select your country" },
                 ]}
               >
                 <Select
-                  placeholder="Select your location"
+                  placeholder="Select your country"
                   showSearch
                   optionFilterProp="children"
                   className="mli-tall-select"
                 >
+                  <Option value="Bangladesh">Bangladesh</Option>
+                  <Option value="USA">USA</Option>
+                  <Option value="India">India</Option>
+                  <Option value="Canada">Canada</Option>
+                  <Option value="Australia">Australia</Option>
+                </Select>
+              </Form.Item>
+
+              {/* State */}
+              <Form.Item
+                name="city"
+                label="State"
+                rules={[
+                  { required: true, message: "Please select your State" },
+                ]}
+              >
+                <Select
+                  placeholder="Select your city"
+                  showSearch
+                  optionFilterProp="children"
+                  className="mli-tall-select"
+                >
+                  <Option value="Dhaka">Dhaka</Option>
                   <Option value="New York">New York</Option>
                   <Option value="Los Angeles">Los Angeles</Option>
                   <Option value="Chicago">Chicago</Option>
@@ -341,9 +367,197 @@ const UserProfile = () => {
               </Form.Item>
             </div>
           </div>
+
+          {/* Address */}
+          <Form.Item
+            name="address"
+            label="Address"
+            className="mt-4"
+            rules={[{ required: true, message: "Please enter your address" }]}
+          >
+            <Input
+              placeholder="Enter your address"
+              className="mli-tall-input"
+            />
+          </Form.Item>
+
+          {/* Upload Section - Logo and Cover Photo */}
+          <div className="mt-4 flex gap-5 justify-between">
+            {/* Upload Merchant Cover Photo */}
+            <div className="flex-1">
+              <Form.Item
+                name="coverImage"
+                label="Upload Merchant Cover Photo"
+                rules={[
+                  {
+                    required: false,
+                    message: "Please upload an image (JPG/PNG only)",
+                  },
+                ]}
+              >
+                <Upload
+                  beforeUpload={(file) => {
+                    const isJpgOrPng =
+                      file.type === "image/jpeg" || file.type === "image/png";
+                    if (!isJpgOrPng) {
+                      message.error("You can only upload JPG/PNG files!");
+                      return Upload.LIST_IGNORE;
+                    }
+
+                    const isLessThan2MB = file.size / 1024 / 1024 < 2;
+                    if (!isLessThan2MB) {
+                      message.error("Image must be smaller than 2MB!");
+                      return Upload.LIST_IGNORE;
+                    }
+
+                    return false;
+                  }}
+                  onChange={handleCoverImageChange}
+                  maxCount={1}
+                  accept=".jpg,.jpeg,.png"
+                  className="w-full"
+                  fileList={coverFileList}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      padding: "16px",
+                      border: "2px dashed #3FAE6A",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      background: "#f9f9f9",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#f0f9f6";
+                      e.currentTarget.style.borderColor = "#2d8659";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#f9f9f9";
+                      e.currentTarget.style.borderColor = "#3FAE6A";
+                    }}
+                  >
+                    <UploadOutlined
+                      style={{ color: "#3FAE6A", fontSize: "18px" }}
+                    />
+                    <div style={{ textAlign: "left" }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontWeight: "600",
+                          color: "#1E1E1E",
+                        }}
+                      >
+                        Click to upload or drag and drop
+                      </p>
+                      <p
+                        style={{
+                          margin: "4px 0 0 0",
+                          fontSize: "12px",
+                          color: "#666",
+                        }}
+                      >
+                        JPG/PNG, max 2MB
+                      </p>
+                    </div>
+                  </div>
+                </Upload>
+              </Form.Item>
+            </div>
+            {/* Upload Merchant Logo */}
+            {/* <div className="flex-1">
+              <Form.Item
+                name="image"
+                label="Upload Merchant Logo"
+                rules={[
+                  {
+                    required: false,
+                    message: "Please upload an image (JPG/PNG only)",
+                  },
+                ]}
+              >
+                <Upload
+                  beforeUpload={(file) => {
+                    const isJpgOrPng =
+                      file.type === "image/jpeg" || file.type === "image/png";
+                    if (!isJpgOrPng) {
+                      message.error("You can only upload JPG/PNG files!");
+                      return Upload.LIST_IGNORE;
+                    }
+
+                    const isLessThan2MB = file.size / 1024 / 1024 < 2;
+                    if (!isLessThan2MB) {
+                      message.error("Image must be smaller than 2MB!");
+                      return Upload.LIST_IGNORE;
+                    }
+
+                    return false;
+                  }}
+                  onChange={handleLogoImageChange}
+                  maxCount={1}
+                  accept=".jpg,.jpeg,.png"
+                  className="w-full"
+                  fileList={logoFileList}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      padding: "16px",
+                      border: "2px dashed #3FAE6A",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      background: "#f9f9f9",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#f0f9f6";
+                      e.currentTarget.style.borderColor = "#2d8659";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#f9f9f9";
+                      e.currentTarget.style.borderColor = "#3FAE6A";
+                    }}
+                  >
+                    <UploadOutlined
+                      style={{ color: "#3FAE6A", fontSize: "18px" }}
+                    />
+                    <div style={{ textAlign: "left" }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontWeight: "600",
+                          color: "#1E1E1E",
+                        }}
+                      >
+                        Click to upload or drag and drop
+                      </p>
+                      <p
+                        style={{
+                          margin: "4px 0 0 0",
+                          fontSize: "12px",
+                          color: "#666",
+                        }}
+                      >
+                        JPG/PNG, max 2MB
+                      </p>
+                    </div>
+                  </div>
+                </Upload>
+              </Form.Item>
+            </div> */}
+          </div>
+
           {/* Company About Us */}
           <Form.Item
-            name="aboutUs"
+            name="about"
             label="Company About Us"
             rules={[
               { required: true, message: "Please describe your company" },
@@ -351,22 +565,27 @@ const UserProfile = () => {
             className="mt-4"
           >
             <TextArea
-              rows={2}
               placeholder="Write about your company"
               className="mli-tall-input"
+              style={{
+                minHeight: "120px",
+                resize: "vertical",
+              }}
             />
           </Form.Item>
 
           {/* Update Profile Button */}
-          <div className="col-span-2 text-end mt-6">
+          <div className="col-span-2 text-end mt-6 mb-8">
             <Form.Item>
               <Button
                 htmlType="submit"
                 block
                 style={{ height: 40 }}
                 className="bg-primary px-8 py-5 rounded-lg text-white hover:text-secondary text-[17px] font-bold"
+                loading={isUpdating}
+                disabled={isUpdating}
               >
-                Save Changes
+                {isUpdating ? "Saving..." : "Save Changes"}
               </Button>
             </Form.Item>
           </div>
