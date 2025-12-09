@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Button, Modal, Input, Form } from "antd";
+import { useState, useEffect, useMemo } from "react";
+import { Button } from "antd";
 import Swal from "sweetalert2";
+import { Form } from "antd";
+import EditTierModal from "./modal/EditTierModal.jsx";
 import {
   useGetTierQuery,
   useAddTierMutation,
@@ -91,11 +93,14 @@ export default function TierSystem() {
     try {
       const payload = {
         name: values.name,
-        pointsThreshold: values.threshold,
-        reward: values.reward,
-        accumulationRule: values.lockoutDuration,
-        redemptionRule: values.pointsSystemLockoutDuration,
-        minTotalSpend: values.minSpend,
+        pointsThreshold: Number(values.threshold) || 0,
+        reward: String(values.reward || ""),
+        accumulationRule: Number(values.lockoutDuration) || 0,
+        redemptionRule: Math.max(
+          1,
+          Number(values.pointsSystemLockoutDuration) || 1
+        ),
+        minTotalSpend: Number(values.minSpend) || 0,
         isActive: true,
       };
 
@@ -249,94 +254,16 @@ export default function TierSystem() {
       </div>
 
       {/* Set Rules / Add Tier Modal */}
-      <Modal
-        title={
-          isAddMode ? "Add New Tier" : `Set Rules - ${editingTier?.name || ""}`
-        }
-        open={isRulesModalVisible}
+      <EditTierModal
+        visible={isRulesModalVisible}
+        isAddMode={isAddMode}
+        editingTier={editingTier}
+        form={form}
+        isAdding={isAdding}
+        isUpdating={isUpdating}
         onCancel={handleCancelRules}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            name: "",
-            threshold: 0,
-            reward: "",
-            lockoutDuration: "",
-            pointsSystemLockoutDuration: "",
-            minSpend: 0,
-          }}
-          onFinish={handleSaveRules}
-          className="flex flex-col gap-4"
-        >
-          <Form.Item
-            label="Tier Name"
-            name="name"
-            rules={[{ required: true, message: "Please enter tier name" }]}
-          >
-            <Input type="text" className="mli-tall-input" />
-          </Form.Item>
-          <Form.Item
-            label="Points Threshold"
-            name="threshold"
-            rules={[{ required: true, message: "Please enter threshold" }]}
-          >
-            <Input type="number" className="mli-tall-input" />
-          </Form.Item>
-          <Form.Item
-            label="Reward"
-            name="reward"
-            rules={[{ required: true, message: "Please enter reward" }]}
-          >
-            <Input className="mli-tall-input" />
-          </Form.Item>
-          <Form.Item
-            label="Point accumulation rule"
-            name="lockoutDuration"
-            rules={[{ required: true, message: "Please enter rule" }]}
-          >
-            <Input className="mli-tall-input" />
-          </Form.Item>
-          <Form.Item
-            label="Point redemption rule"
-            name="pointsSystemLockoutDuration"
-            rules={[{ required: true, message: "Please enter rule" }]}
-          >
-            <Input className="mli-tall-input" />
-          </Form.Item>
-          <Form.Item
-            label="Min Total Spend ($)"
-            name="minSpend"
-            rules={[{ required: true, message: "Please enter min spend" }]}
-          >
-            <Input type="number" className="mli-tall-input" />
-          </Form.Item>
-          <div className="flex justify-end gap-2">
-            <Button
-              onClick={handleCancelRules}
-              className="border border-primary"
-              disabled={isAdding || isUpdating}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="bg-primary text-white hover:text-secondary font-bold"
-              loading={isAdding || isUpdating}
-              disabled={isAdding || isUpdating}
-            >
-              {isAdding || isUpdating
-                ? "Saving..."
-                : isAddMode
-                ? "Add Tier"
-                : "Save Changes"}
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+        onSave={handleSaveRules}
+      />
     </div>
   );
 }
