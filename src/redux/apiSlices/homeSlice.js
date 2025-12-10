@@ -33,10 +33,19 @@ export const homeApi = api.injectEndpoints({
       transformResponse: (response) => response?.data,
       providesTags: ["Statistics"],
     }),
+
+    // ---------------------------------------
+    // GET Customer Chart
+    // ---------------------------------------
+    getCustomerChart: builder.query({
+      query: ({ year }) => ({
+        url: `/mercent/customer-chart?year=${year}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response,
+      providesTags: ["CustomerChart"],
+    }),
   }),
 });
 
-export const {
-  useGetStatsQuery,
-  useGetWeeklySellReportQuery,
-} = homeApi;
+export const { useGetStatsQuery, useGetWeeklySellReportQuery, useGetCustomerChartQuery } = homeApi;

@@ -9,6 +9,8 @@ import {
 } from "chart.js";
 import { useEffect, useRef, useState } from "react";
 import { Bar } from "react-chartjs-2";
+import { useGetCustomerChartQuery } from "../../redux/apiSlices/homeSlice";
+import { Spin } from "antd";
 
 // Register Chart.js components
 ChartJS.register(
@@ -29,6 +31,11 @@ const BarChart = () => {
   const [selected, setSelected] = useState(String(currentYear));
   const options2 = years.map((y) => String(y));
   const dropdownRef = useRef(null);
+
+  // Fetch data from API
+  const { data: chartResponse, isLoading } = useGetCustomerChartQuery({
+    year: selectedYear,
+  });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -71,28 +78,16 @@ const BarChart = () => {
     "Dec",
   ];
 
-  // Deterministic sample data generator per year -> returns 12 values
-  const getYearlyData = (year) => {
-    // deterministic values so UI remains stable across renders
-    return monthLabels.map((_, i) => {
-      // mix year and month to produce a pseudo-realistic number
-      const base = (year % 100) * 3;
-      const seasonal = Math.round(
-        50 + 30 * Math.sin(((i + 1) / 12) * Math.PI * 2)
-      );
-      const variation = ((year + i) % 7) * 8;
-      return Math.max(5, Math.round(base + seasonal + variation));
-    });
+  // Extract data from API response
+  const getRevenueData = () => {
+    if (!chartResponse?.data) return monthLabels.map(() => 0);
+    return chartResponse.data.map((item) => item.totalRevenue || 0);
   };
 
-  // Create two datasets: Revenue and Discount
-  const getRevenueData = (year) => getYearlyData(year).map((v) => v * 10);
-  const getDiscountData = (year) =>
-    getRevenueData(year).map((rev, i) => {
-      // deterministic discount between ~3% and ~15% of revenue
-      const pct = 3 + ((year + i) % 13);
-      return Math.round((rev * pct) / 100);
-    });
+  const getDiscountData = () => {
+    if (!chartResponse?.data) return monthLabels.map(() => 0);
+    return chartResponse.data.map((item) => item.totalDiscount || 0);
+  };
 
   const options = {
     responsive: true,
@@ -160,14 +155,14 @@ const BarChart = () => {
     datasets: [
       {
         label: "Revenue",
-        data: getRevenueData(selectedYear),
+        data: getRevenueData(),
         backgroundColor: "#3fae6a",
         borderRadius: 0,
         maxBarThickness: 48,
       },
       {
         label: "Discount",
-        data: getDiscountData(selectedYear),
+        data: getDiscountData(),
         backgroundColor: "#ff7a7a",
         borderRadius: 0,
         maxBarThickness: 48,
@@ -218,7 +213,13 @@ const BarChart = () => {
       </div>
 
       <div style={{ width: "100%", height: chartHeight }}>
-        <Bar data={data} options={options} />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Bar data={data} options={options} />
+        )}
       </div>
     </div>
   );

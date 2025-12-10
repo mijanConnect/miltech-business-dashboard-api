@@ -1,8 +1,7 @@
 import { Form, Input, Select, Upload, message } from "antd";
-import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
-import Swal from "sweetalert2"; // ✅ import SweetAlert2
+import Swal from "sweetalert2";
 import { useUpdateProfileMutation } from "../../redux/apiSlices/authSlice";
 
 const { Option } = Select;
