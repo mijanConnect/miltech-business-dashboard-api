@@ -183,7 +183,7 @@ const BarChart = () => {
               {/* Dropdown Button */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full font-medium text-[14px] py-[12px] px-[16px] border border-primary text-secondary rounded-lg text-left flex justify-between items-center"
+                className="w-full font-medium text-[14px] py-[8px] px-[16px] border border-primary text-secondary rounded-lg text-left flex justify-between items-center"
               >
                 {selected}
                 <span className="ml-2">▼</span>
