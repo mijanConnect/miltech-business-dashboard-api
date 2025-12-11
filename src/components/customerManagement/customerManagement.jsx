@@ -1,41 +1,8 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Tooltip, Switch } from "antd";
+import { useState } from "react";
+import { Table, Button, Modal, Input, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
-import { FaTrash } from "react-icons/fa";
-import { IoEyeSharp } from "react-icons/io5";
-import Swal from "sweetalert2";
 import MarchantIcon from "../../assets/marchant.png";
 import { Rate } from "antd";
-
-const components = {
-  header: {
-    row: (props) => (
-      <tr
-        {...props}
-        style={{
-          backgroundColor: "#f0f5f9",
-          height: "50px",
-          color: "secondary",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-    cell: (props) => (
-      <th
-        {...props}
-        style={{
-          color: "secondary",
-          fontWeight: "bold",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-  },
-};
 
 const CustomerManagement = () => {
   const [data, setData] = useState([

@@ -14,7 +14,7 @@ export const customerApi = api.injectEndpoints({
           });
         }
         return {
-          url: `/promo-merchant?${params.toString()}`,
+          url: `/promo-merchant/merchants?${params.toString()}`,
           method: "GET",
         };
       },

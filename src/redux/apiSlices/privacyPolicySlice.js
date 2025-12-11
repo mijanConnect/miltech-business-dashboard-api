@@ -35,4 +35,5 @@ export const privacyPolicyApi = api.injectEndpoints({
   }),
 });
 
-export const { useGetPrivacyPolicyQuery, useUpdatePrivacyPolicyMutation } = privacyPolicyApi;
+export const { useGetPrivacyPolicyQuery, useUpdatePrivacyPolicyMutation } =
+  privacyPolicyApi;

@@ -14,6 +14,10 @@ export const UserProvider = ({ children }) => {
     const handleStorageChange = (e) => {
       if (e.key === "token") {
         setToken(e.newValue);
+        // Clear user data when token is removed
+        if (!e.newValue) {
+          setUser(null);
+        }
       }
     };
 
@@ -22,6 +26,10 @@ export const UserProvider = ({ children }) => {
       const currentToken = localStorage.getItem("token");
       if (currentToken !== token) {
         setToken(currentToken);
+        // Clear user data when token is removed
+        if (!currentToken) {
+          setUser(null);
+        }
       }
     };
 

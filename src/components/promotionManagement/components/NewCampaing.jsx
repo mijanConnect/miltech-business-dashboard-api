@@ -202,21 +202,15 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
                 placeholder="Select Customer Segment"
                 className="mli-tall-select"
               >
-                <Select.Option value="vip_customer">
-                  VIP Customers
-                </Select.Option>
-                <Select.Option value="new_customer">
-                  New Customers
-                </Select.Option>
+                <Select.Option value="new_customer">New Customer</Select.Option>
                 <Select.Option value="returning_customer">
-                  Returning Customers
+                  Returning Customer
                 </Select.Option>
                 <Select.Option value="loyal_customer">
-                  Loyal Customers
+                  Loyal Customer
                 </Select.Option>
-                <Select.Option value="all_customer">
-                  All Customers
-                </Select.Option>
+                <Select.Option value="vip_customer">VIP Customer</Select.Option>
+                <Select.Option value="all_customer">All Customer</Select.Option>
               </Select>
             </Form.Item>
 
