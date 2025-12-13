@@ -1,7 +1,8 @@
-import { Button, Col, DatePicker, Form, Row, Select, Table } from "antd";
+import { Button, Col, DatePicker, Form, Row, Select } from "antd";
 import "antd/dist/reset.css";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
+import { useGetCustomerReportQuery } from "../../../redux/apiSlices/customerReportSlice";
 import {
   Area,
   AreaChart,
@@ -16,38 +17,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import CustomTable from "../../common/CustomTable";
 
 const { Option } = Select;
-
-const components = {
-  header: {
-    row: (props) => (
-      <tr
-        {...props}
-        style={{
-          backgroundColor: "#f0f5f9",
-          height: "50px",
-          color: "secondary",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-    cell: (props) => (
-      <th
-        {...props}
-        style={{
-          color: "secondary",
-          fontWeight: "bold",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-  },
-};
 
 // Sample data with additional fields
 const data = [
@@ -210,35 +182,53 @@ export default function MonthlyStatsChartCustomer() {
   const [selectedPointsFilter, setSelectedPointsFilter] = useState("All");
   const [chartType, setChartType] = useState("Bar");
 
+  // Fetch customer report data from API
+  const {
+    data: reportResponse,
+    isLoading,
+    isFetching,
+  } = useGetCustomerReportQuery([]);
+
+  // Transform API data to match table format
+  const transformedData = useMemo(() => {
+    if (!reportResponse?.data) return [];
+    return reportResponse.data.map((item, index) => ({
+      key: index,
+      sl: index + 1,
+      date: item.date,
+      userId: item.userId,
+      customerName: item.customerName,
+      CustomerName: item.customerName,
+      subscriptionStatus: item.subscriptionStatus,
+      SubscriptionStatus: item.subscriptionStatus,
+      revenue: item.revenue,
+      Revenue: item.revenue,
+      pointsAccumulated: item.pointsAccumulated,
+      "Points Accumulated": item.pointsAccumulated,
+      pointsRedeemed: item.pointsRedeemed,
+      "Points Redeemed": item.pointsRedeemed,
+    }));
+  }, [reportResponse?.data]);
+
   const filteredData = useMemo(() => {
-    return data.filter((d) => {
+    return transformedData.filter((d) => {
       const isDateInRange =
         (!fromDate || dayjs(d.date).isAfter(dayjs(fromDate))) &&
         (!toDate || dayjs(d.date).isBefore(dayjs(toDate)));
       return (
         isDateInRange &&
-        (selectedCategory === "All Categories" ||
-          d.category === selectedCategory) &&
-        (selectedRegion === "All Regions" || d.region === selectedRegion) &&
         (selectedCustomer === "All Customers" ||
           d.CustomerName === selectedCustomer) &&
-        (selectedLocation === "All Locations" ||
-          d.Location === selectedLocation) &&
         (selectedSubscription === "All Statuses" ||
-          d.SubscriptionStatus === selectedSubscription) &&
-        (selectedPayment === "All Payments" ||
-          d.PaymentStatus === selectedPayment)
+          d.SubscriptionStatus === selectedSubscription)
       );
     });
   }, [
     fromDate,
     toDate,
-    selectedCategory,
-    selectedRegion,
     selectedCustomer,
-    selectedLocation,
     selectedSubscription,
-    selectedPayment,
+    transformedData,
   ]);
 
   const columns = [
@@ -247,13 +237,18 @@ export default function MonthlyStatsChartCustomer() {
       dataIndex: "sl",
       key: "sl",
       align: "center",
-      render: (_, __, index) => index + 1,
     },
-    { title: "Date", dataIndex: "date", key: "date", align: "center" },
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      align: "center",
+      render: (date) => (date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "-"),
+    },
     {
       title: "Customer ID",
-      dataIndex: "CustomerID",
-      key: "CustomerID",
+      dataIndex: "userId",
+      key: "userId",
       align: "center",
     },
     {
@@ -267,6 +262,7 @@ export default function MonthlyStatsChartCustomer() {
       dataIndex: "Location",
       key: "Location",
       align: "center",
+      render: () => "-",
     },
     {
       title: "Subscription Status",
@@ -279,9 +275,21 @@ export default function MonthlyStatsChartCustomer() {
       dataIndex: "PaymentStatus",
       key: "PaymentStatus",
       align: "center",
+      render: () => "-",
     },
-    { title: "Revenue", dataIndex: "Revenue", key: "Revenue", align: "center" },
-    { title: "Users", dataIndex: "Users", key: "Users", align: "center" },
+    {
+      title: "Revenue",
+      dataIndex: "Revenue",
+      key: "Revenue",
+      align: "center",
+    },
+    {
+      title: "Users",
+      dataIndex: "Users",
+      key: "Users",
+      align: "center",
+      render: () => "-",
+    },
     {
       title: "Points Redeemed",
       dataIndex: "Points Redeemed",
@@ -637,50 +645,16 @@ export default function MonthlyStatsChartCustomer() {
         </ResponsiveContainer>
       </div>
 
-      {/* Ant Design Table */}
+      {/* Reusable CustomTable */}
       <div style={{ marginTop: "50px" }}>
         <h1 className="text-[22px] font-bold mb-2">Data Table</h1>
-        <Table
-          bordered={false}
-          size="small"
-          rowClassName="custom-row"
-          components={components}
-          className="custom-table"
-          columns={columns.filter((col) => {
-            // Always show these columns
-            if (
-              [
-                "sl",
-                "date",
-                "CustomerName",
-                "CustomerID",
-                "Location",
-                "SubscriptionStatus",
-                "PaymentStatus",
-              ].includes(col.dataIndex)
-            ) {
-              return true;
-            }
-
-            // Filter by selected metric
-            if (selectedMetric !== "all" && col.dataIndex !== selectedMetric) {
-              return false;
-            }
-
-            // Filter by points filter
-            if (selectedPointsFilter === "Points Redeemed") {
-              return col.dataIndex !== "Points Accumulated";
-            } else if (selectedPointsFilter === "Points Accumulated") {
-              return col.dataIndex !== "Points Redeemed";
-            }
-
-            return true;
-          })}
-          dataSource={filteredData.map((row, index) => ({
-            ...row,
-            key: index,
-          }))}
-          pagination={{ pageSize: 6 }}
+        <CustomTable
+          data={filteredData}
+          columns={columns}
+          pagination={{ pageSize: 6, total: filteredData.length }}
+          rowKey={(record) => record.key}
+          isLoading={isLoading}
+          isFetching={isFetching}
         />
       </div>
     </div>
