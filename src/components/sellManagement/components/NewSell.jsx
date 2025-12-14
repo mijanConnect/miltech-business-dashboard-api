@@ -11,7 +11,10 @@ import {
 } from "antd";
 import { IoArrowBack } from "react-icons/io5";
 import dayjs from "dayjs";
-import { useLazyFindDigitalCardQuery } from "../../../redux/apiSlices/selleManagementSlice";
+import {
+  useLazyFindDigitalCardQuery,
+  useRequestPromotionApprovalMutation,
+} from "../../../redux/apiSlices/selleManagementSlice";
 
 const { Option } = Select;
 
@@ -20,7 +23,10 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
   const [cardCode, setCardCode] = React.useState("");
   const [selectedPromotions, setSelectedPromotions] = React.useState([]);
   const [digitalCardData, setDigitalCardData] = React.useState(null);
+  const [approvalResponse, setApprovalResponse] = React.useState(null);
   const [findDigitalCard, { isLoading }] = useLazyFindDigitalCardQuery();
+  const [requestPromotionApproval, { isLoading: isApproving }] =
+    useRequestPromotionApprovalMutation();
 
   const toggleSelectPromotion = (promotionId) => {
     setSelectedPromotions((prev) =>
@@ -47,6 +53,42 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
     } catch (error) {
       message.error(error?.data?.message || "Failed to find card");
       setDigitalCardData(null);
+    }
+  };
+
+  const handleApplyGiftCard = async () => {
+    if (!cardCode.trim()) {
+      message.error("Please enter a card code first");
+      return;
+    }
+    if (selectedPromotions.length === 0) {
+      message.error("Please select at least one promotion");
+      return;
+    }
+
+    const totalBill = form.getFieldValue("totalAmount");
+    const pointRedeem = form.getFieldValue("pointRedeem");
+
+    if (!totalBill) {
+      message.error("Please enter total bill amount");
+      return;
+    }
+
+    try {
+      const requestBody = {
+        digitalCardCode: cardCode,
+        promotionId: selectedPromotions[0], // Using the first selected promotion
+        totalBill: parseFloat(totalBill),
+        pointRedeemed: parseFloat(pointRedeem) || 0,
+      };
+
+      const result = await requestPromotionApproval(requestBody).unwrap();
+      if (result?.success) {
+        setApprovalResponse(result.data);
+        message.success("Gift card applied successfully");
+      }
+    } catch (error) {
+      message.error(error?.data?.message || "Failed to apply gift card");
     }
   };
 
@@ -128,7 +170,6 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
               </Form.Item>
               <Form.Item label="Expiry Date" name="date" className="mb-6">
                 <DatePicker
-                  style={{ width: "100%" }}
                   className="mli-tall-picker"
                   defaultValue={editingRow ? dayjs(editingRow.date) : null}
                 />
@@ -164,16 +205,16 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                   </p>
                 )}
               </div>
-              {/* <Button className="w-full bg-primary text-white mt-4 text-[16px] font-bold p-5">
+              <Button className="w-full bg-primary text-white mt-4 text-[16px] font-bold p-5">
                 Apply Gift Card
-              </Button> */}
+              </Button>
               <div className="flex justify-between mt-4 mb-3">
                 <Button className="bg-primary text-white font-bold p-5 text-[16px]">
                   Scan Now
                 </Button>
-                <Button className="bg-primary text-white font-bold p-5 text-[16px]">
+                {/* <Button className="bg-primary text-white font-bold p-5 text-[16px]">
                   Add Rewards
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
@@ -187,31 +228,47 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                 <p className="font-bold text-[24px] text-secondary">
                   Total Bill:
                 </p>
-                <p className="font-bold text-[24px] text-secondary">$0.00</p>
+                <p className="font-bold text-[24px] text-secondary">
+                  $
+                  {approvalResponse?.totalBill ||
+                    form.getFieldValue("totalAmount") ||
+                    "0.00"}
+                </p>
               </div>
               <div className="flex justify-between">
                 <p className="font-bold text-[24px] text-secondary">
                   Points Redeemed:
                 </p>
-                <p className="font-bold text-[24px] text-secondary">$0.00</p>
+                <p className="font-bold text-[24px] text-secondary">
+                  $
+                  {approvalResponse?.pointsRedeemed ||
+                    form.getFieldValue("pointRedeem") ||
+                    "0.00"}
+                </p>
               </div>
               <div className="flex justify-between">
                 <p className="font-bold text-[24px] text-secondary">
                   Points Earned:
                 </p>
-                <p className="font-bold text-[24px] text-secondary">+0</p>
+                <p className="font-bold text-[24px] text-secondary">
+                  +{approvalResponse?.pointsEarned || "0"}
+                </p>
               </div>
               <div className="flex justify-between">
                 <p className="font-bold text-[24px] text-secondary">
                   Gift Card:
                 </p>
-                <p className="font-bold text-[24px] text-secondary">+0</p>
+                <p className="font-bold text-[24px] text-secondary">
+                  +{approvalResponse?.giftCard || "0"}
+                </p>
               </div>
               <div className="flex justify-between border-t-2 border-primary">
                 <p className="font-bold text-[24px] text-secondary">
                   Final Amount:
                 </p>
-                <p className="font-bold text-[24px] text-secondary">$0.00</p>
+                <p className="font-bold text-[24px] text-secondary">
+                  ${approvalResponse?.finalAmount || "0.00"}
+                </p>
               </div>
               <Form.Item>
                 <Button

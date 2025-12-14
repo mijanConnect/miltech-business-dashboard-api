@@ -12,7 +12,22 @@ export const selleManagementApi = api.injectEndpoints({
       }),
       transformResponse: (response) => response,
     }),
+
+    // ---------------------------------------
+    // POST request approval for promotion
+    // ---------------------------------------
+    requestPromotionApproval: builder.mutation({
+      query: (body) => ({
+        url: `/sell/promotion/request-approval`,
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response) => response,
+    }),
   }),
 });
 
-export const { useLazyFindDigitalCardQuery } = selleManagementApi;
+export const { 
+  useLazyFindDigitalCardQuery,
+  useRequestPromotionApprovalMutation 
+} = selleManagementApi;
