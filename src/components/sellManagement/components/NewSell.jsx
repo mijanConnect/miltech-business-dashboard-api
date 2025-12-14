@@ -1,24 +1,60 @@
 import React from "react";
-import { Button, Form, Input, Select, DatePicker, Space } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Space,
+  Spin,
+  message,
+} from "antd";
 import { IoArrowBack } from "react-icons/io5";
-import dayjs from "dayjs"; // Import dayjs
+import dayjs from "dayjs";
+import { useLazyFindDigitalCardQuery } from "../../../redux/apiSlices/selleManagementSlice";
 
 const { Option } = Select;
 
-const giftCardsData = [
-  { id: 1, name: "Gift Card #1234", points: 500 },
-  { id: 2, name: "Gift Card #5678", points: 300 },
-  { id: 3, name: "Gift Card #9012", points: 700 },
-];
-
 const NewSell = ({ onBack, onSubmit, editingRow }) => {
-  const [selectedCards, setSelectedCards] = React.useState([]);
+  const [form] = Form.useForm();
+  const [cardCode, setCardCode] = React.useState("");
+  const [selectedPromotions, setSelectedPromotions] = React.useState([]);
+  const [digitalCardData, setDigitalCardData] = React.useState(null);
+  const [findDigitalCard, { isLoading }] = useLazyFindDigitalCardQuery();
 
-  const toggleSelect = (id) => {
-    setSelectedCards((prev) =>
-      prev.includes(id) ? prev.filter((cardId) => cardId !== id) : [...prev, id]
+  const toggleSelectPromotion = (promotionId) => {
+    setSelectedPromotions((prev) =>
+      prev.includes(promotionId)
+        ? prev.filter((id) => id !== promotionId)
+        : [...prev, promotionId]
     );
   };
+
+  const handleFindCard = async () => {
+    if (!cardCode.trim()) {
+      message.error("Please enter a card code");
+      return;
+    }
+    try {
+      const result = await findDigitalCard(cardCode).unwrap();
+      if (result?.success && result?.data?.digitalCard) {
+        setDigitalCardData(result.data.digitalCard);
+        form.setFieldsValue({
+          pointEarned: result.data.digitalCard.availablePoints || 0,
+        });
+        message.success("Card found successfully");
+      }
+    } catch (error) {
+      message.error(error?.data?.message || "Failed to find card");
+      setDigitalCardData(null);
+    }
+  };
+
+  React.useEffect(() => {
+    if (editingRow) {
+      form.setFieldsValue(editingRow);
+    }
+  }, [editingRow, form]);
 
   const handleSubmit = (values) => {
     const updatedValues = {
@@ -38,11 +74,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
         ></Button>
         <h1 className="text-[24px] font-bold mb-4">New Sell</h1>
       </div>
-      <Form
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={editingRow}
-      >
+      <Form layout="vertical" onFinish={handleSubmit} form={form}>
         <div className="flex justify-between gap-10">
           <div className="w-full border rounded-lg">
             <h1 className="text-[24px] font-bold text-primary bg-white px-6 py-2">
@@ -55,10 +87,18 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                 className="mb-3"
               >
                 <Space.Compact style={{ width: "100%" }}>
-                  <Input style={{ width: "70%" }} className="mli-tall-input" />
+                  <Input
+                    style={{ width: "70%" }}
+                    className="mli-tall-input"
+                    value={cardCode}
+                    onChange={(e) => setCardCode(e.target.value)}
+                    onPressEnter={handleFindCard}
+                  />
                   <Button
                     style={{ width: "30%" }}
                     className="h-10 bg-primary text-white font-semibold text-[18px]"
+                    onClick={handleFindCard}
+                    loading={isLoading}
                   >
                     Find
                   </Button>
@@ -95,29 +135,45 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
               </Form.Item>
 
               <div className="flex flex-wrap gap-4">
-                {giftCardsData.map((card) => (
-                  <div
-                    key={card.id}
-                    onClick={() => toggleSelect(card.id)}
-                    className={`flex flex-col items-center border rounded p-4 cursor-pointer ${
-                      selectedCards.includes(card.id)
-                        ? "border-primary bg-blue-100"
-                        : "border-primary bg-white"
-                    }`}
-                  >
-                    <h1 className="text-[14px] font-bold">{card.name}</h1>
-                    <p className="text-[14px] font-normal">
-                      Available {card.points} Points
-                    </p>
-                  </div>
-                ))}
+                {digitalCardData?.promotions &&
+                digitalCardData.promotions.length > 0 ? (
+                  digitalCardData.promotions.map((promotion) => (
+                    <div
+                      key={promotion._id}
+                      onClick={() => toggleSelectPromotion(promotion._id)}
+                      className={`flex flex-col items-center border rounded p-4 cursor-pointer transition-all ${
+                        selectedPromotions.includes(promotion._id)
+                          ? "border-primary bg-blue-100"
+                          : "border-gray-300 bg-white hover:border-primary"
+                      }`}
+                    >
+                      <h1 className="text-[14px] font-bold">
+                        {promotion.name}
+                      </h1>
+                      <p className="text-[14px] font-normal text-secondary">
+                        {promotion.discountPercentage}% Discount
+                      </p>
+                      <p className="text-[12px] text-gray-500 mt-1">
+                        {dayjs(promotion.startDate).format("DD/MM/YYYY")}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-[14px]">
+                    No promotions available or card not found
+                  </p>
+                )}
               </div>
-              <Button className="w-full bg-primary text-white mt-4 text-[16px] font-bold p-5">
+              {/* <Button className="w-full bg-primary text-white mt-4 text-[16px] font-bold p-5">
                 Apply Gift Card
-              </Button>
+              </Button> */}
               <div className="flex justify-between mt-4 mb-3">
-                <Button className="bg-primary text-white">Scan Now</Button>
-                <Button className="bg-primary text-white">Add Rewards</Button>
+                <Button className="bg-primary text-white font-bold p-5 text-[16px]">
+                  Scan Now
+                </Button>
+                <Button className="bg-primary text-white font-bold p-5 text-[16px]">
+                  Add Rewards
+                </Button>
               </div>
             </div>
           </div>
