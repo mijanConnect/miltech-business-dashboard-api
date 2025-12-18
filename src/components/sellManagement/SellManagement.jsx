@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Table, Select, Input, Button, Tooltip, message, Form, Modal, Spin } from "antd";
+import { Select, Input, Button, Tooltip, message, Form, Modal } from "antd";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import NewSell from "./components/NewSell";
+import CustomTable from "../common/CustomTable";
 import dayjs from "dayjs";
 import { useGetTodaysSellsQuery } from "../../redux/apiSlices/selleManagementSlice";
 
@@ -245,24 +246,19 @@ const SellManagement = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <Spin spinning={isLoading || isFetching}>
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            pagination={{
-              current: pagination.current,
-              pageSize: pagination.pageSize,
-              total: pagination.total,
-              onChange: handleTableChange,
-            }}
-            bordered={false}
-            size="small"
-            rowClassName="custom-row"
-            className="custom-table"
-            scroll={{ x: "max-content" }}
-            loading={isLoading}
-          />
-        </Spin>
+        <CustomTable
+          data={filteredData}
+          columns={columns}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+          }}
+          onPaginationChange={handleTableChange}
+          rowKey="id"
+        />
       </div>
     </div>
   );
