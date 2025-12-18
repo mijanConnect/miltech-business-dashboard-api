@@ -27,7 +27,7 @@ export const selleManagementApi = api.injectEndpoints({
   }),
 });
 
-export const { 
+export const {
   useLazyFindDigitalCardQuery,
-  useRequestPromotionApprovalMutation 
+  useRequestPromotionApprovalMutation,
 } = selleManagementApi;
