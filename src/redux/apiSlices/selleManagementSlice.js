@@ -69,6 +69,17 @@ export const selleManagementApi = api.injectEndpoints({
       }),
       transformResponse: (response) => response,
     }),
+
+    // ---------------------------------------
+    // GET user transactions
+    // ---------------------------------------
+    getUserTransactions: builder.query({
+      query: (userId) => ({
+        url: `/sell/transactions/${userId}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response,
+    }),
   }),
 });
 
@@ -79,4 +90,5 @@ export const {
   useGetTodaysSellsQuery,
   useGetCustomersQuery,
   useCheckoutTransactionMutation,
+  useGetUserTransactionsQuery,
 } = selleManagementApi;
