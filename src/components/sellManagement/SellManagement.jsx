@@ -19,7 +19,11 @@ const SellManagement = () => {
   const [form] = Form.useForm();
 
   // Fetch today's sales from API
-  const { data: apiData, isLoading, isFetching } = useGetTodaysSellsQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetTodaysSellsQuery({
     page: pagination.current,
     limit: pagination.pageSize,
   });
@@ -98,7 +102,13 @@ const SellManagement = () => {
   };
 
   const columns = [
-    { title: "SL", dataIndex: "id", key: "id", align: "center", render: (_, __, index) => index + 1 },
+    {
+      title: "SL",
+      dataIndex: "id",
+      key: "id",
+      align: "center",
+      render: (_, __, index) => index + 1,
+    },
     {
       title: "Customer Name",
       dataIndex: "customerName",
@@ -164,7 +174,11 @@ const SellManagement = () => {
           pending: "text-orange-600 font-semibold",
           failed: "text-red-600 font-semibold",
         };
-        return <span className={statusColors[status?.toLowerCase()] || ""}>{status}</span>;
+        return (
+          <span className={statusColors[status?.toLowerCase()] || ""}>
+            {status}
+          </span>
+        );
       },
     },
     {

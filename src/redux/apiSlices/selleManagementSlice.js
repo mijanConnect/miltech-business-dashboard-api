@@ -57,6 +57,18 @@ export const selleManagementApi = api.injectEndpoints({
       }),
       transformResponse: (response) => response,
     }),
+
+    // ---------------------------------------
+    // POST checkout/complete transaction
+    // ---------------------------------------
+    checkoutTransaction: builder.mutation({
+      query: (body) => ({
+        url: `/sell/checkout`,
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response) => response,
+    }),
   }),
 });
 
@@ -66,4 +78,5 @@ export const {
   useGetMerchantsQuery,
   useGetTodaysSellsQuery,
   useGetCustomersQuery,
+  useCheckoutTransactionMutation,
 } = selleManagementApi;

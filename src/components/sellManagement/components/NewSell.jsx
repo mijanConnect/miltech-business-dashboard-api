@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import {
   useLazyFindDigitalCardQuery,
   useRequestPromotionApprovalMutation,
+  useCheckoutTransactionMutation,
 } from "../../../redux/apiSlices/selleManagementSlice";
 
 const { Option } = Select;
@@ -34,6 +35,8 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
   const [findDigitalCard, { isLoading }] = useLazyFindDigitalCardQuery();
   const [requestPromotionApproval, { isLoading: isApproving }] =
     useRequestPromotionApprovalMutation();
+  const [checkoutTransaction, { isLoading: isCheckingOut }] =
+    useCheckoutTransactionMutation();
 
   const toggleSelectPromotion = (promotionId) => {
     setSelectedPromotions((prev) =>
@@ -226,12 +229,35 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
     }
   }, [editingRow, form]);
 
-  const handleSubmit = (values) => {
-    const updatedValues = {
-      ...values,
-      date: values.date ? values.date.format("YYYY-MM-DD") : undefined,
-    };
-    onSubmit(updatedValues);
+  const handleSubmit = async (values) => {
+    // Validate approval response exists before checkout
+    if (!approvalResponse) {
+      message.error("Please apply gift card first");
+      return;
+    }
+
+    try {
+      const checkoutBody = {
+        digitalCardCode: cardCode,
+        totalBill: approvalResponse.totalBill,
+        promotionId: selectedPromotions[0] || null,
+      };
+
+      const result = await checkoutTransaction(checkoutBody).unwrap();
+      if (result?.success) {
+        message.success("Transaction completed successfully!");
+        // Reset form and states
+        form.resetFields();
+        setCardCode("");
+        setSelectedPromotions([]);
+        setDigitalCardData(null);
+        setApprovalResponse(null);
+        // Call parent callback
+        onSubmit(result.data);
+      }
+    } catch (error) {
+      message.error(error?.data?.message || "Failed to complete transaction");
+    }
   };
 
   return (
@@ -392,7 +418,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
 
           <div className="w-full border py-8 rounded-lg">
             <h1 className="text-[24px] font-bold text-primary bg-white px-6 pb-6">
-              Summery
+              Summary
             </h1>
             <div className="px-6 flex flex-col gap-2">
               <div className="flex justify-between">
@@ -411,10 +437,9 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                   Points Redeemed:
                 </p>
                 <p className="font-bold text-[24px] text-secondary">
-                  $
-                  {approvalResponse?.pointsRedeemed ||
+                  {approvalResponse?.pointRedeemed ||
                     form.getFieldValue("pointRedeem") ||
-                    "0.00"}
+                    "0"}
                 </p>
               </div>
               <div className="flex justify-between">
@@ -427,18 +452,18 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
               </div>
               <div className="flex justify-between">
                 <p className="font-bold text-[24px] text-secondary">
-                  Gift Card:
+                  Promotion Discount:
                 </p>
                 <p className="font-bold text-[24px] text-secondary">
-                  +{approvalResponse?.giftCard || "0"}
+                  ${approvalResponse?.discountedBill || "0.00"}
                 </p>
               </div>
-              <div className="flex justify-between border-t-2 border-primary">
+              <div className="flex justify-between border-t-2 border-primary pt-2">
                 <p className="font-bold text-[24px] text-secondary">
                   Final Amount:
                 </p>
                 <p className="font-bold text-[24px] text-secondary">
-                  ${approvalResponse?.finalAmount || "0.00"}
+                  ${approvalResponse?.finalBill || "0.00"}
                 </p>
               </div>
               <Form.Item>
@@ -446,6 +471,8 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                   type="primary"
                   htmlType="submit"
                   className="w-full bg-primary text-white mt-6 text-[16px] font-bold p-5"
+                  loading={isCheckingOut}
+                  disabled={!approvalResponse}
                 >
                   Complete Transaction
                 </Button>
