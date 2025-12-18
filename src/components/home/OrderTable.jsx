@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Table, Tooltip, Modal } from "antd";
+import React, { useState, useMemo } from "react";
+import { Table, Tooltip, Modal, Spin } from "antd";
+import { useGetCustomersQuery } from "../../redux/apiSlices/selleManagementSlice";
 
 const components = {
   header: {
@@ -32,38 +33,38 @@ const components = {
 };
 
 const OrderTable = () => {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      customerId: "CUST001",
-      customerName: "John Doe",
-      points: 1200,
-      tier: "Gold",
-      joiningDate: "2023-01-15",
-      accountStatus: "Active",
-    },
-    {
-      id: 2,
-      customerId: "CUST002",
-      customerName: "Jane Smith",
-      points: 900,
-      tier: "Silver",
-      joiningDate: "2023-03-20",
-      accountStatus: "Inactive",
-    },
-    {
-      id: 3,
-      customerId: "CUST003",
-      customerName: "Michael Brown",
-      points: 1500,
-      tier: "Platinum",
-      joiningDate: "2022-11-05",
-      accountStatus: "Active",
-    },
-  ]);
-
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+
+  // Fetch customers from API
+  const {
+    data: customersResponse,
+    isLoading,
+    isFetching,
+  } = useGetCustomersQuery({
+    page: pagination.current,
+    limit: pagination.pageSize,
+  });
+
+  // Transform API data to table format
+  const data = useMemo(() => {
+    if (!customersResponse?.data) return [];
+    return customersResponse.data.map((item, index) => ({
+      id:
+        pagination.current * pagination.pageSize -
+        pagination.pageSize +
+        index +
+        1,
+      customerId: item.customerId || item.id || "-",
+      customerName: item.name || item.customerName || "-",
+      points: item.availablePoints || item.points || 0,
+      tier: item.loyaltyTier || item.tier || "-",
+      joiningDate: item.joiningDate || item.createdAt || "-",
+      accountStatus: item.accountStatus || item.status || "Active",
+      key: index,
+    }));
+  }, [customersResponse?.data, pagination]);
 
   const showViewModal = (record) => {
     setSelectedRecord(record);
@@ -109,22 +110,31 @@ const OrderTable = () => {
     <div className="w-full">
       <div className="flex flex-col sm:flex-row justify-between mb-2 items-start sm:items-center gap-2 sm:gap-0">
         <h1 className="text-lg sm:text-xl md:text-xl font-bold text-secondary mb-2">
-          Today’s New Member
+          Recent New Members
         </h1>
       </div>
 
       <div className="overflow-x-auto">
-        <Table
-          dataSource={data}
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-          bordered={false}
-          size="small"
-          rowClassName="custom-row"
-          components={components}
-          className="custom-table"
-          scroll={{ x: "max-content" }}
-        />
+        <Spin spinning={isLoading || isFetching}>
+          <Table
+            dataSource={data}
+            columns={columns}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: customersResponse?.pagination?.total || 0,
+            }}
+            onChange={(pag) =>
+              setPagination({ current: pag.current, pageSize: pag.pageSize })
+            }
+            bordered={false}
+            size="small"
+            rowClassName="custom-row"
+            components={components}
+            className="custom-table"
+            scroll={{ x: "max-content" }}
+          />
+        </Spin>
       </div>
     </div>
   );
