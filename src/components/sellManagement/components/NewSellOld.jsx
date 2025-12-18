@@ -8,7 +8,6 @@ import {
   Space,
   Spin,
   message,
-  Modal,
 } from "antd";
 import { IoArrowBack } from "react-icons/io5";
 import dayjs from "dayjs";
@@ -25,12 +24,6 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
   const [selectedPromotions, setSelectedPromotions] = React.useState([]);
   const [digitalCardData, setDigitalCardData] = React.useState(null);
   const [approvalResponse, setApprovalResponse] = React.useState(null);
-  const [isScanModalVisible, setIsScanModalVisible] = React.useState(false);
-  const [scannedCode, setScannedCode] = React.useState("");
-  const scanInputRef = React.useRef(null);
-  const scanBufferRef = React.useRef("");
-  const scanTimeoutRef = React.useRef(null);
-
   const [findDigitalCard, { isLoading }] = useLazyFindDigitalCardQuery();
   const [requestPromotionApproval, { isLoading: isApproving }] =
     useRequestPromotionApprovalMutation();
@@ -84,7 +77,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
     try {
       const requestBody = {
         digitalCardCode: cardCode,
-        promotionId: selectedPromotions[0],
+        promotionId: selectedPromotions[0], // Using the first selected promotion
         totalBill: parseFloat(totalBill),
         pointRedeemed: parseFloat(pointRedeem) || 0,
       };
@@ -99,127 +92,6 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
     }
   };
 
-  // Barcode scan modal open handler
-  const handleScanNow = () => {
-    setIsScanModalVisible(true);
-    setScannedCode("");
-    scanBufferRef.current = "";
-  };
-
-  // Handle barcode scan input with better detection
-  const handleBarcodeInput = (e) => {
-    const value = e.target.value;
-    setScannedCode(value);
-  };
-
-  // Handle keypress for barcode scanner
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const code = scannedCode.trim();
-      if (code) {
-        handleScanComplete(code);
-      }
-    }
-  };
-
-  // Alternative: Listen for rapid keyboard input (barcode scanner pattern)
-  React.useEffect(() => {
-    if (!isScanModalVisible) return;
-
-    const handleKeyDown = (e) => {
-      // Ignore special keys
-      if (e.key === "Shift" || e.key === "Control" || e.key === "Alt") {
-        return;
-      }
-
-      // Clear previous timeout
-      if (scanTimeoutRef.current) {
-        clearTimeout(scanTimeoutRef.current);
-      }
-
-      // If Enter key, process the buffer
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const code = scanBufferRef.current.trim();
-        if (code) {
-          setScannedCode(code);
-          handleScanComplete(code);
-        }
-        scanBufferRef.current = "";
-        return;
-      }
-
-      // Add character to buffer
-      if (e.key.length === 1) {
-        scanBufferRef.current += e.key;
-      }
-
-      // Set timeout to clear buffer (barcode scanners type very fast)
-      scanTimeoutRef.current = setTimeout(() => {
-        scanBufferRef.current = "";
-      }, 100);
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      if (scanTimeoutRef.current) {
-        clearTimeout(scanTimeoutRef.current);
-      }
-    };
-  }, [isScanModalVisible]);
-
-  // Process scanned barcode
-  const handleScanComplete = async (code) => {
-    if (!code) {
-      message.error("No barcode detected");
-      return;
-    }
-
-    // Set the card code and close modal
-    setCardCode(code);
-    setIsScanModalVisible(false);
-    message.success("Barcode scanned successfully");
-
-    // Automatically search for the card
-    try {
-      const result = await findDigitalCard(code).unwrap();
-      if (result?.success && result?.data?.digitalCard) {
-        setDigitalCardData(result.data.digitalCard);
-        form.setFieldsValue({
-          pointEarned: result.data.digitalCard.availablePoints || 0,
-        });
-        message.success("Card found successfully");
-      }
-    } catch (error) {
-      message.error(error?.data?.message || "Failed to find card");
-      setDigitalCardData(null);
-    }
-  };
-
-  // Manual scan complete (for testing or manual entry)
-  const handleManualScanComplete = () => {
-    if (scannedCode.trim()) {
-      handleScanComplete(scannedCode.trim());
-    }
-  };
-
-  // Cancel scan modal
-  const handleCancelScan = () => {
-    setIsScanModalVisible(false);
-    setScannedCode("");
-    scanBufferRef.current = "";
-  };
-
-  // Keep focus on scan input
-  React.useEffect(() => {
-    if (isScanModalVisible && scanInputRef.current) {
-      scanInputRef.current.focus();
-    }
-  }, [isScanModalVisible]);
-
   React.useEffect(() => {
     if (editingRow) {
       form.setFieldsValue(editingRow);
@@ -229,9 +101,9 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
   const handleSubmit = (values) => {
     const updatedValues = {
       ...values,
-      date: values.date ? values.date.format("YYYY-MM-DD") : undefined,
+      date: values.date ? values.date.format("YYYY-MM-DD") : undefined, // Convert date to string
     };
-    onSubmit(updatedValues);
+    onSubmit(updatedValues); // Calls the onSubmit function passed from parent component
   };
 
   return (
@@ -244,45 +116,6 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
         ></Button>
         <h1 className="text-[24px] font-bold mb-4">New Sell</h1>
       </div>
-
-      {/* Barcode Scan Modal */}
-      <Modal
-        title="Scan Barcode"
-        open={isScanModalVisible}
-        onOk={handleManualScanComplete}
-        onCancel={handleCancelScan}
-        okText="Done"
-        cancelText="Cancel"
-        centered
-      >
-        <div className="flex flex-col items-center py-8">
-          <div className="text-6xl mb-4">📷</div>
-          <p className="text-lg font-semibold mb-4">Ready to scan barcode...</p>
-          <p className="text-gray-500 mb-6 text-center">
-            Please scan the barcode using your barcode scanner
-          </p>
-
-          {/* Input field for barcode scanner */}
-          <input
-            ref={scanInputRef}
-            type="text"
-            value={scannedCode}
-            onChange={handleBarcodeInput}
-            onKeyPress={handleKeyPress}
-            className="w-full px-4 py-2 border-2 border-primary rounded-lg text-center text-lg font-mono"
-            placeholder="Waiting for barcode scan..."
-            autoFocus
-            autoComplete="off"
-          />
-
-          {scannedCode && (
-            <div className="mt-4 text-green-600 font-semibold">
-              Scanned: {scannedCode}
-            </div>
-          )}
-        </div>
-      </Modal>
-
       <Form layout="vertical" onFinish={handleSubmit} form={form}>
         <div className="flex justify-between gap-10">
           <div className="w-full border rounded-lg">
@@ -372,20 +205,16 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                   </p>
                 )}
               </div>
-              <Button
-                className="w-full bg-primary text-white mt-4 text-[16px] font-bold p-5"
-                onClick={handleApplyGiftCard}
-                loading={isApproving}
-              >
+              <Button className="w-full bg-primary text-white mt-4 text-[16px] font-bold p-5">
                 Apply Gift Card
               </Button>
               <div className="flex justify-between mt-4 mb-3">
-                <Button
-                  className="bg-primary text-white font-bold p-5 text-[16px]"
-                  onClick={handleScanNow}
-                >
+                <Button className="bg-primary text-white font-bold p-5 text-[16px]">
                   Scan Now
                 </Button>
+                {/* <Button className="bg-primary text-white font-bold p-5 text-[16px]">
+                  Add Rewards
+                </Button> */}
               </div>
             </div>
           </div>

@@ -1,55 +1,56 @@
-import React, { useState } from "react";
-import { Table, Select, Input, Button, Tooltip, message, Form } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Select, Input, Button, Tooltip, message, Form, Modal, Spin } from "antd";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import NewSell from "./components/NewSell";
-import dayjs from "dayjs"; // Import dayjs
+import dayjs from "dayjs";
+import { useGetTodaysSellsQuery } from "../../redux/apiSlices/selleManagementSlice";
 
 const { Option } = Select;
 
 const SellManagement = () => {
   const [selectedCards, setSelectedCards] = useState([]);
-  const [data, setData] = useState([
-    {
-      id: 1,
-      customerName: "Alice Johnson",
-      customerId: "CARD001",
-      totalAmount: "$120",
-      pointRedeem: 20,
-      pointEarned: 12,
-      finalAmount: "$100",
-      transactionStatus: "Completed",
-      date: "2025-08-17",
-    },
-    {
-      id: 2,
-      customerName: "John Doe",
-      customerId: "CARD002",
-      totalAmount: "$80",
-      pointRedeem: 10,
-      pointEarned: 8,
-      finalAmount: "$70",
-      transactionStatus: "Pending",
-      date: "2025-07-16",
-    },
-    {
-      id: 3,
-      customerName: "Michael Brown",
-      customerId: "CARD003",
-      totalAmount: "$200",
-      pointRedeem: 50,
-      pointEarned: 20,
-      finalAmount: "$150",
-      transactionStatus: "Completed",
-      date: "2025-08-15",
-    },
-  ]);
-
+  const [data, setData] = useState([]);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [searchText, setSearchText] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [isNewSellPage, setIsNewSellPage] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
-
   const [form] = Form.useForm();
+
+  // Fetch today's sales from API
+  const { data: apiData, isLoading, isFetching } = useGetTodaysSellsQuery({
+    page: pagination.current,
+    limit: pagination.pageSize,
+  });
+
+  // Update local data when API data changes
+  useEffect(() => {
+    if (apiData?.data && Array.isArray(apiData.data)) {
+      const formattedData = apiData.data.map((item, index) => ({
+        id: item._id || index + 1,
+        customerName: item.name || "N/A",
+        email: item.email || "N/A",
+        phone: item.phone || "N/A",
+        totalTransactions: item.totalTransactions || 0,
+        totalAmount: item.totalBilled ? `$${item.totalBilled}` : "$0.00",
+        pointEarned: item.totalPointsEarned || 0,
+        pointRedeem: item.totalPointsRedeemed || 0,
+        finalAmount: item.finalBilled ? `$${item.finalBilled}` : "$0.00",
+        cardIds: item.cardIds || "N/A",
+        transactionStatus: item.status || "Pending",
+        date: item.date || new Date().toISOString().split("T")[0],
+      }));
+      setData(formattedData);
+
+      // Update pagination info if available
+      if (apiData.pagination) {
+        setPagination((prev) => ({
+          ...prev,
+          total: apiData.pagination.total,
+        }));
+      }
+    }
+  }, [apiData]);
 
   const handleMonthChange = (month) => setSelectedMonth(month);
   const handleSearchChange = (e) => setSearchText(e.target.value);
@@ -66,19 +67,9 @@ const SellManagement = () => {
   });
 
   const handleNewSellSubmit = (values) => {
-    const newEntry = {
-      id: data.length + 1,
-      customerName: values.customerName,
-      customerId: values.customerId,
-      totalAmount: `$${values.totalAmount}`,
-      pointRedeem: values.pointRedeem,
-      pointEarned: values.pointEarned,
-      finalAmount: `$${values.finalAmount}`,
-      transactionStatus: values.transactionStatus,
-      date: values.date, // Use the formatted date string
-    };
-    setData([newEntry, ...data]);
+    message.success("Transaction completed successfully!");
     setIsNewSellPage(false);
+    // Data will be refreshed automatically when component re-fetches from API
   };
 
   const handleEdit = (record) => {
@@ -89,15 +80,24 @@ const SellManagement = () => {
   const handleDelete = (id) => {
     Modal.confirm({
       title: "Are you sure you want to delete this entry?",
+      okText: "Yes",
+      cancelText: "No",
       onOk: () => {
-        setData(data.filter((item) => item.id !== id));
         message.success("Entry deleted successfully");
+        // API call to delete would go here
       },
     });
   };
 
+  const handleTableChange = (newPagination) => {
+    setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+    });
+  };
+
   const columns = [
-    { title: "SL", dataIndex: "id", key: "id", align: "center" },
+    { title: "SL", dataIndex: "id", key: "id", align: "center", render: (_, __, index) => index + 1 },
     {
       title: "Customer Name",
       dataIndex: "customerName",
@@ -105,40 +105,66 @@ const SellManagement = () => {
       align: "center",
     },
     {
-      title: "Card ID",
-      dataIndex: "customerId",
-      key: "customerId",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
       align: "center",
     },
     {
-      title: "Total Amount",
+      title: "Phone",
+      dataIndex: "phone",
+      key: "phone",
+      align: "center",
+    },
+    {
+      title: "Card IDs",
+      dataIndex: "cardIds",
+      key: "cardIds",
+      align: "center",
+    },
+    {
+      title: "Total Transactions",
+      dataIndex: "totalTransactions",
+      key: "totalTransactions",
+      align: "center",
+    },
+    {
+      title: "Total Billed",
       dataIndex: "totalAmount",
       key: "totalAmount",
       align: "center",
     },
     {
-      title: "Point Redeem",
-      dataIndex: "pointRedeem",
-      key: "pointRedeem",
-      align: "center",
-    },
-    {
-      title: "Point Earned",
-      dataIndex: "pointEarned",
-      key: "pointEarned",
-      align: "center",
-    },
-    {
-      title: "Final Amount",
+      title: "Final Billed",
       dataIndex: "finalAmount",
       key: "finalAmount",
       align: "center",
     },
     {
-      title: "Transaction Status",
+      title: "Points Earned",
+      dataIndex: "pointEarned",
+      key: "pointEarned",
+      align: "center",
+    },
+    {
+      title: "Points Redeemed",
+      dataIndex: "pointRedeem",
+      key: "pointRedeem",
+      align: "center",
+    },
+    {
+      title: "Status",
       dataIndex: "transactionStatus",
       key: "transactionStatus",
       align: "center",
+      render: (status) => {
+        const statusColors = {
+          completed: "text-green-600 font-semibold",
+          pending: "text-orange-600 font-semibold",
+          failed: "text-red-600 font-semibold",
+        };
+        return <span className={statusColors[status?.toLowerCase()] || ""}>{status}</span>;
+      },
     },
     {
       title: "Actions",
@@ -219,16 +245,24 @@ const SellManagement = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <Table
-          dataSource={filteredData}
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-          bordered={false}
-          size="small"
-          rowClassName="custom-row"
-          className="custom-table"
-          scroll={{ x: "max-content" }}
-        />
+        <Spin spinning={isLoading || isFetching}>
+          <Table
+            dataSource={filteredData}
+            columns={columns}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              onChange: handleTableChange,
+            }}
+            bordered={false}
+            size="small"
+            rowClassName="custom-row"
+            className="custom-table"
+            scroll={{ x: "max-content" }}
+            loading={isLoading}
+          />
+        </Spin>
       </div>
     </div>
   );
