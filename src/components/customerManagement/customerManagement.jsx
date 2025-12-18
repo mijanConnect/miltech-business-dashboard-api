@@ -1,67 +1,65 @@
-import { useState } from "react";
-import { Table, Button, Modal, Input, Tooltip } from "antd";
+import { useState, useEffect } from "react";
+import { Button, Modal, Input, Tooltip, Table } from "antd";
 import { useNavigate } from "react-router-dom";
 import MarchantIcon from "../../assets/marchant.png";
 import { Rate } from "antd";
+import CustomTable from "../common/CustomTable";
+import DetailsModal from "./components/DetailsModal";
+import { useGetCustomersQuery } from "../../redux/apiSlices/selleManagementSlice";
 
 const CustomerManagement = () => {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      customerID: 25,
-      name: "Alice Johnson",
-      image: "https://i.ibb.co/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "example@email.com",
-      retailer: 5,
-      sales: "300",
-      status: "Active",
-      phone: "+1234567890",
-      location: "New York",
-      businessName: "Alice's Store",
-      feedback: 5,
-      remainingRedemptionPoints: 1200,
-      pointsRedeemed: 300,
-    },
-    {
-      id: 2,
-      customerID: 29,
-      name: "John Doe",
-      image: "https://i.ibb.co/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "john@email.com",
-      retailer: 3,
-      sales: "500",
-      status: "Inactive",
-      phone: "+9876543210",
-      location: "California",
-      businessName: "John's Shop",
-      feedback: 4,
-      remainingRedemptionPoints: 1800,
-      pointsRedeemed: 200,
-    },
-    {
-      id: 3,
-      customerID: 22,
-      name: "Sam Smith",
-      image: "https://i.ibb.co/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "sam@email.com",
-      retailer: 3,
-      sales: "500",
-      status: "Active",
-      phone: "+9876543210",
-      location: "California",
-      businessName: "Sam's Shop",
-      feedback: 3,
-      remainingRedemptionPoints: 100,
-      pointsRedeemed: 30,
-    },
-  ]);
-
-  const [searchText, setSearchText] = useState(""); // Search text state
+  const [data, setData] = useState([]);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [searchText, setSearchText] = useState("");
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   const navigate = useNavigate();
+
+  // Fetch customers from API
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetCustomersQuery({
+    page: pagination.current,
+    limit: pagination.pageSize,
+  });
+
+  // Update local data when API data changes
+  useEffect(() => {
+    if (apiData?.data && Array.isArray(apiData.data)) {
+      const formattedData = apiData.data.map((item, index) => ({
+        id: index + 1,
+        customerID: item._id || "N/A",
+        name: item.name || "N/A",
+        image: item.profile || MarchantIcon,
+        email: item.email || "N/A",
+        phone: item.phone || "N/A",
+        location: item.country || "N/A",
+        sales: item.totalBilled || 0,
+        salesRep: item.salesRep || "N/A",
+        status: item.status || "Pending",
+        feedback: item.rating || 0,
+        ratingComment: item.ratingComment || "",
+        pointsRedeemed: item.totalPointsRedeemed || 0,
+        remainingRedemptionPoints: item.availablePoints || 0,
+        totalTransactions: item.totalTransactions || 0,
+        totalPointsEarned: item.totalPointsEarned || 0,
+        cardIds: item.cardIds || "N/A",
+      }));
+      setData(formattedData);
+
+      // Update pagination info if available
+      if (apiData.pagination) {
+        setPagination((prev) => ({
+          ...prev,
+          total: apiData.pagination.total,
+        }));
+      }
+    }
+  }, [apiData]);
 
   // Show view details modal
   const showViewModal = (record) => {
@@ -85,6 +83,14 @@ const CustomerManagement = () => {
   const handleCloseFeedbackModal = () => {
     setIsFeedbackModalVisible(false);
     setSelectedRecord(null);
+  };
+
+  // Handle pagination change
+  const handleTableChange = (newPagination) => {
+    setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+    });
   };
 
   // Columns for loyalty points / orders
@@ -153,8 +159,24 @@ const CustomerManagement = () => {
       key: "location",
       align: "center",
     },
-    { title: "Sales Rep", dataIndex: "name", key: "salesRep", align: "center" },
-    { title: "Total Sales", dataIndex: "sales", key: "sales", align: "center" },
+    {
+      title: "Sales Rep",
+      dataIndex: "salesRep",
+      key: "salesRep",
+      align: "center",
+    },
+    {
+      title: "Total Sales",
+      dataIndex: "sales",
+      key: "sales",
+      align: "center",
+      render: (sales) => {
+        if (typeof sales === "number") {
+          return `$${sales.toFixed(2)}`;
+        }
+        return `$${sales || 0}`;
+      },
+    },
     { title: "Status", dataIndex: "status", key: "status", align: "center" },
     {
       title: "Ratings",
@@ -245,79 +267,29 @@ const CustomerManagement = () => {
 
       {/* Customer Table */}
       <div className="overflow-x-auto">
-        <Table
-          dataSource={filteredData}
+        <CustomTable
+          data={filteredData}
           columns={columns}
-          pagination={{ pageSize: 10 }}
-          bordered={false}
-          size="small"
-          rowKey="id" // <- explicit key
-          className="custom-table" // styling handled by CSS
-          scroll={{ x: "max-content" }}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+          }}
+          onPaginationChange={handleTableChange}
+          rowKey="id"
         />
       </div>
 
       {/* View Details Modal */}
-      <Modal
-        visible={isViewModalVisible}
-        onCancel={handleCloseViewModal}
-        width={700}
-        footer={[]}
-      >
-        {selectedRecord && (
-          <div>
-            <div className="flex flex-row justify-between items-start gap-3 mt-8">
-              <img
-                src={MarchantIcon}
-                alt={selectedRecord.name}
-                className="w-214 h-214 rounded-full"
-              />
-              <div className="flex flex-col gap-2 border border-primary rounded-md p-4 w-full">
-                <p className="text-[22px] font-bold text-primary">
-                  Customer Profile
-                </p>
-                <p>
-                  <strong>Name:</strong> {selectedRecord.name}
-                </p>
-                {/* <p>
-                  <strong>Business Name:</strong> {selectedRecord.businessName}
-                </p> */}
-                {/* <p>
-                  <strong>Email:</strong> {selectedRecord.email}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {selectedRecord.phone}
-                </p> */}
-                <p>
-                  <strong>Location:</strong> {selectedRecord.location}
-                </p>
-                <p>
-                  <strong>Total Sales:</strong> {selectedRecord.sales}
-                </p>
-                <p>
-                  <strong>Status:</strong> {selectedRecord.status}
-                </p>
-                <p className="text-[22px] font-bold text-primary">
-                  Loyalty Points
-                </p>
-                <p>
-                  <strong>Points Balance:</strong> {selectedRecord.sales}
-                </p>
-                <p>
-                  <strong>Tier:</strong> Gold
-                </p>
-              </div>
-            </div>
-            <Table
-              columns={columns2}
-              dataSource={data}
-              rowKey="orderId"
-              pagination={{ pageSize: 5 }}
-              className="mt-6"
-            />
-          </div>
-        )}
-      </Modal>
+      <DetailsModal
+        isVisible={isViewModalVisible}
+        selectedRecord={selectedRecord}
+        onClose={handleCloseViewModal}
+        columns2={columns2}
+        data={data}
+      />
 
       {/* Feedback Modal */}
       <Modal

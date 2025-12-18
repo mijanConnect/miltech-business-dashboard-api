@@ -46,6 +46,17 @@ export const selleManagementApi = api.injectEndpoints({
       }),
       transformResponse: (response) => response,
     }),
+
+    // ---------------------------------------
+    // GET customers list
+    // ---------------------------------------
+    getCustomers: builder.query({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: `/sell/customer?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response,
+    }),
   }),
 });
 
@@ -54,4 +65,5 @@ export const {
   useRequestPromotionApprovalMutation,
   useGetMerchantsQuery,
   useGetTodaysSellsQuery,
+  useGetCustomersQuery,
 } = selleManagementApi;
