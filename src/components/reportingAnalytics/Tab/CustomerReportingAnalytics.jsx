@@ -1,7 +1,7 @@
 import { Button, Col, DatePicker, Form, Row, Select } from "antd";
 import "antd/dist/reset.css";
 import dayjs from "dayjs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGetCustomerReportQuery } from "../../../redux/apiSlices/customerReportSlice";
 import {
   Area,
@@ -39,56 +39,14 @@ const data = [
     "Points Redeemed": 32,
     "Points Accumulated": 45,
   },
-  {
-    sl: 2,
-    date: "2025-02-01",
-    category: "Employee",
-    region: "USA",
-    CustomerName: "Customer 2",
-    CustomerID: "CUST002",
-    Location: "Los Angeles",
-    SubscriptionStatus: "Inactive",
-    PaymentStatus: "Unpaid",
-    DaysToExpire: 15,
-    Revenue: 75,
-    Users: 60,
-    "Points Redeemed": 27,
-    "Points Accumulated": 38,
-  },
-  {
-    sl: 3,
-    date: "2025-03-01",
-    category: "Employee",
-    region: "USA",
-    CustomerName: "Customer 3",
-    CustomerID: "CUST003",
-    Location: "Chicago",
-    SubscriptionStatus: "Active",
-    PaymentStatus: "Paid",
-    DaysToExpire: 45,
-    Revenue: 50,
-    Users: 62,
-    "Points Redeemed": 22,
-    "Points Accumulated": 55,
-  },
-  // Other data...
 ];
 
-// Dropdown options
-const monthYearOptions = [...new Set(data.map((d) => d.date))];
-const categoryOptions = [
-  "All Categories",
-  ...new Set(data.map((d) => d.category)),
-];
-const regionOptions = ["All Regions", ...new Set(data.map((d) => d.region))];
-const CustomerOptions = [
-  "All Customers",
-  ...new Set(data.map((d) => d.CustomerName)),
-];
-const locationOptions = [
-  "All Locations",
-  ...new Set(data.map((d) => d.Location)),
-];
+// Dropdown options - will be generated from data
+const monthYearOptions = ["All Months"];
+const categoryOptions = ["All Categories"];
+const regionOptions = ["All Regions"];
+const CustomerOptions = ["All Customers"];
+const locationOptions = ["All Locations"];
 const subscriptionOptions = ["All Statuses", "Active", "Inactive"];
 const paymentOptions = ["All Payments", "Paid", "Unpaid"];
 const metricOptions = ["Revenue", "Users", "Points Redeemed"];
@@ -181,128 +139,198 @@ export default function MonthlyStatsChartCustomer() {
   const [selectedMetric, setSelectedMetric] = useState("all");
   const [selectedPointsFilter, setSelectedPointsFilter] = useState("All");
   const [chartType, setChartType] = useState("Bar");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+
+  // Build query parameters
+  const queryParams = [];
+  if (fromDate)
+    queryParams.push({
+      name: "startDate",
+      value: fromDate.format("YYYY-MM-DD"),
+    });
+  if (toDate)
+    queryParams.push({ name: "endDate", value: toDate.format("YYYY-MM-DD") });
+  if (selectedSubscription !== "All Statuses")
+    queryParams.push({
+      name: "subscriptionStatus",
+      value:
+        selectedSubscription === "Inactive"
+          ? "inActive"
+          : selectedSubscription.toLowerCase(),
+    });
+  if (selectedLocation !== "All Locations")
+    queryParams.push({
+      name: "location",
+      value: selectedLocation.toLowerCase(),
+    });
+
+  // Update browser URL with query parameters
+  useEffect(() => {
+    const params = new URLSearchParams();
+    queryParams.forEach((param) => {
+      params.append(param.name, param.value);
+    });
+    const newUrl = params.toString()
+      ? `${window.location.pathname}?${params.toString()}`
+      : window.location.pathname;
+    window.history.replaceState(null, "", newUrl);
+  }, [queryParams]);
 
   // Fetch customer report data from API
   const {
     data: reportResponse,
     isLoading,
     isFetching,
-  } = useGetCustomerReportQuery([]);
+  } = useGetCustomerReportQuery(queryParams.length > 0 ? queryParams : []);
 
   // Transform API data to match table format
   const transformedData = useMemo(() => {
-    if (!reportResponse?.data) return [];
-    return reportResponse.data.map((item, index) => ({
-      key: index,
-      sl: index + 1,
-      date: item.date,
-      userId: item.userId,
-      customerName: item.customerName,
-      CustomerName: item.customerName,
-      subscriptionStatus: item.subscriptionStatus,
-      SubscriptionStatus: item.subscriptionStatus,
-      revenue: item.revenue,
-      Revenue: item.revenue,
-      pointsAccumulated: item.pointsAccumulated,
-      "Points Accumulated": item.pointsAccumulated,
-      pointsRedeemed: item.pointsRedeemed,
-      "Points Redeemed": item.pointsRedeemed,
-    }));
-  }, [reportResponse?.data]);
+    if (!reportResponse?.data?.records) return [];
+    return reportResponse.data.records.map((item, index) => {
+      // Normalize subscription status from API
+      const normalizedStatus =
+        item.subscriptionStatus?.toLowerCase() === "active"
+          ? "Active"
+          : "Inactive";
+      return {
+        key: index,
+        sl: index + 1,
+        date: new Date(),
+        customerId: item.customerId,
+        CustomerName: item.customerName,
+        customerName: item.customerName,
+        Location: item.location,
+        location: item.location,
+        SubscriptionStatus: normalizedStatus,
+        subscriptionStatus: item.subscriptionStatus,
+        Revenue: item.revenue,
+        revenue: item.revenue,
+        "Points Accumulated": item.pointsAccumulated,
+        pointsAccumulated: item.pointsAccumulated,
+        "Points Redeemed": item.pointsRedeemed,
+        pointsRedeemed: item.pointsRedeemed,
+        category: "Customer",
+        region: item.location,
+        Users: Math.random() * 100,
+      };
+    });
+  }, [reportResponse?.data?.records]);
 
   const filteredData = useMemo(() => {
     return transformedData.filter((d) => {
-      const isDateInRange =
-        (!fromDate || dayjs(d.date).isAfter(dayjs(fromDate))) &&
-        (!toDate || dayjs(d.date).isBefore(dayjs(toDate)));
       return (
-        isDateInRange &&
         (selectedCustomer === "All Customers" ||
           d.CustomerName === selectedCustomer) &&
+        (selectedLocation === "All Locations" ||
+          d.Location === selectedLocation) &&
         (selectedSubscription === "All Statuses" ||
           d.SubscriptionStatus === selectedSubscription)
       );
     });
   }, [
-    fromDate,
-    toDate,
     selectedCustomer,
     selectedSubscription,
+    selectedLocation,
     transformedData,
   ]);
 
-  const columns = [
-    {
-      title: "SL",
-      dataIndex: "sl",
-      key: "sl",
-      align: "center",
-    },
-    {
-      title: "Date",
-      dataIndex: "date",
-      key: "date",
-      align: "center",
-      render: (date) => (date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "-"),
-    },
-    {
-      title: "Customer ID",
-      dataIndex: "userId",
-      key: "userId",
-      align: "center",
-    },
-    {
-      title: "Customer Name",
-      dataIndex: "CustomerName",
-      key: "CustomerName",
-      align: "center",
-    },
-    {
-      title: "Location",
-      dataIndex: "Location",
-      key: "Location",
-      align: "center",
-      render: () => "-",
-    },
-    {
-      title: "Subscription Status",
-      dataIndex: "SubscriptionStatus",
-      key: "SubscriptionStatus",
-      align: "center",
-    },
-    {
-      title: "Payment Status",
-      dataIndex: "PaymentStatus",
-      key: "PaymentStatus",
-      align: "center",
-      render: () => "-",
-    },
-    {
-      title: "Revenue",
-      dataIndex: "Revenue",
-      key: "Revenue",
-      align: "center",
-    },
-    {
-      title: "Users",
-      dataIndex: "Users",
-      key: "Users",
-      align: "center",
-      render: () => "-",
-    },
-    {
-      title: "Points Redeemed",
-      dataIndex: "Points Redeemed",
-      key: "Points Redeemed",
-      align: "center",
-    },
-    {
-      title: "Points Accumulated",
-      dataIndex: "Points Accumulated",
-      key: "Points Accumulated",
-      align: "center",
-    },
-  ];
+  // Generate dynamic options from transformed data
+  const customerOptions = useMemo(() => {
+    const customers = new Set(transformedData.map((d) => d.CustomerName));
+    return ["All Customers", ...Array.from(customers)];
+  }, [transformedData]);
+
+  const dynamicLocationOptions = useMemo(() => {
+    const locations = new Set(transformedData.map((d) => d.Location));
+    return ["All Locations", ...Array.from(locations)];
+  }, [transformedData]);
+
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        title: "SL",
+        dataIndex: "sl",
+        key: "sl",
+        align: "center",
+      },
+      {
+        title: "Date",
+        dataIndex: "date",
+        key: "date",
+        align: "center",
+        render: (date) => (date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "-"),
+      },
+      {
+        title: "Customer ID",
+        dataIndex: "customerId",
+        key: "customerId",
+        align: "center",
+      },
+      {
+        title: "Customer Name",
+        dataIndex: "CustomerName",
+        key: "CustomerName",
+        align: "center",
+      },
+      {
+        title: "Location",
+        dataIndex: "Location",
+        key: "Location",
+        align: "center",
+      },
+      {
+        title: "Subscription Status",
+        dataIndex: "SubscriptionStatus",
+        key: "SubscriptionStatus",
+        align: "center",
+        render: (status) => (
+          <span
+            className={
+              status === "Active"
+                ? "text-green-600 font-semibold"
+                : "text-red-600 font-semibold"
+            }
+          >
+            {status}
+          </span>
+        ),
+      },
+      {
+        title: "Revenue",
+        dataIndex: "Revenue",
+        key: "Revenue",
+        align: "center",
+        render: (revenue) => `$${revenue || 0}`,
+      },
+    ];
+
+    // Add Points columns based on filter
+    if (
+      selectedPointsFilter === "All" ||
+      selectedPointsFilter === "Points Redeemed"
+    ) {
+      baseColumns.push({
+        title: "Points Redeemed",
+        dataIndex: "Points Redeemed",
+        key: "Points Redeemed",
+        align: "center",
+      });
+    }
+
+    if (
+      selectedPointsFilter === "All" ||
+      selectedPointsFilter === "Points Accumulated"
+    ) {
+      baseColumns.push({
+        title: "Points Accumulated",
+        dataIndex: "Points Accumulated",
+        key: "Points Accumulated",
+        align: "center",
+      });
+    }
+
+    return baseColumns;
+  }, [selectedPointsFilter]);
 
   return (
     <div style={{ width: "100%" }}>
@@ -352,7 +380,7 @@ export default function MonthlyStatsChartCustomer() {
                     return label.toLowerCase().includes(input.toLowerCase());
                   }}
                 >
-                  {CustomerOptions.map((option) => (
+                  {customerOptions.map((option) => (
                     <Option key={option} value={option}>
                       {option}
                     </Option>
@@ -376,7 +404,7 @@ export default function MonthlyStatsChartCustomer() {
                     return label.toLowerCase().includes(input.toLowerCase());
                   }}
                 >
-                  {locationOptions.map((option) => (
+                  {dynamicLocationOptions.map((option) => (
                     <Option key={option} value={option}>
                       {option}
                     </Option>
