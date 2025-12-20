@@ -90,7 +90,37 @@ const SignUp = () => {
         <Form.Item
           name="password"
           label={<p>Password</p>}
-          rules={[{ required: true, message: "Please enter your password" }]}
+          validateTrigger="onChange"
+          rules={[
+            { required: true, message: "Please enter your password" },
+            {
+              validator(_, value) {
+                if (!value) return Promise.resolve();
+
+                const hasLetter = /[a-zA-Z]/.test(value);
+                const hasNumber = /\d/.test(value);
+                const hasSpecialChar =
+                  /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+
+                if (hasLetter && hasNumber && hasSpecialChar) {
+                  return Promise.resolve();
+                }
+
+                const missing = [];
+                if (!hasLetter) missing.push("letter");
+                if (!hasNumber) missing.push("number");
+                if (!hasSpecialChar) missing.push("special character");
+
+                return Promise.reject(
+                  new Error(
+                    `Password must contain at least one ${missing.join(
+                      ", one "
+                    )}`
+                  )
+                );
+              },
+            },
+          ]}
         >
           <Input.Password
             placeholder="Enter your password"
