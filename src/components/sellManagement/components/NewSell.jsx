@@ -77,7 +77,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
     }
 
     const totalBill = form.getFieldValue("totalAmount");
-    const pointRedeem = form.getFieldValue("pointRedeem");
+    const pointRedeemed = form.getFieldValue("pointRedeemed");
 
     if (!totalBill) {
       message.error("Please enter total bill amount");
@@ -89,7 +89,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
         digitalCardCode: cardCode,
         promotionId: selectedPromotions[0],
         totalBill: parseFloat(totalBill),
-        pointRedeemed: parseFloat(pointRedeem) || 0,
+        pointRedeemed: parseFloat(pointRedeemed) || 0,
       };
 
       const result = await requestPromotionApproval(requestBody).unwrap();
@@ -355,8 +355,8 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                 <Input className="mli-tall-input" />
               </Form.Item>
               <Form.Item
-                label="Point Redeem"
-                name="pointRedeem"
+                label="Point Redeemed"
+                name="pointRedeemed"
                 className="mb-3"
               >
                 <Input className="mli-tall-input" />
@@ -438,7 +438,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                 </p>
                 <p className="font-bold text-[24px] text-secondary">
                   {approvalResponse?.pointRedeemed ||
-                    form.getFieldValue("pointRedeem") ||
+                    form.getFieldValue("pointRedeemed") ||
                     "0"}
                 </p>
               </div>
