@@ -127,8 +127,8 @@ const Custom3DBarWithWatermark = ({
 };
 
 export default function MonthlyStatsChartCustomer() {
-  const [fromDate, setFromDate] = useState(null);
-  const [toDate, setToDate] = useState(null);
+  const [fromDate, setFromDate] = useState(dayjs().startOf("year"));
+  const [toDate, setToDate] = useState(dayjs().endOf("year"));
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedRegion, setSelectedRegion] = useState("All Regions");
   const [selectedCustomer, setSelectedCustomer] = useState("All Customers");
@@ -585,10 +585,13 @@ export default function MonthlyStatsChartCustomer() {
                       setSelectedPointsFilter("All");
                       setChartType("Bar");
                     }}
+                    className="bg-red-500 !border-red-500 px-6 py-[19px] rounded-md text-white hover:!text-red-500 text-[14px] font-bold"
                   >
                     Clear Selection
                   </Button>
-                  <Button>Export Report</Button>
+                  <Button className="bg-primary px-6 py-[19px] rounded-md text-white hover:text-secondary text-[14px] font-bold">
+                    Export Report
+                  </Button>
                 </div>
               </Form.Item>
             </Col>
