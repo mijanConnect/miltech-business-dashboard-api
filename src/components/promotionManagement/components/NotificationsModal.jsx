@@ -1,7 +1,17 @@
 import { useState } from "react";
-import { Modal, Form, Button, Select, Input, Upload, message } from "antd";
+import {
+  Modal,
+  Form,
+  Button,
+  Select,
+  Input,
+  Upload,
+  message,
+  Spin,
+} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
+import { useSendNotificationMutation } from "../../../redux/apiSlices/promoSlice";
 
 const { Option } = Select;
 
@@ -14,9 +24,11 @@ const CustomerSegmentSelect = () => {
       rules={[{ required: true, message: "Please select a segment" }]}
     >
       <Select placeholder="Choose segment" className="mli-tall-select">
-        <Option value="New Customers">New Customers</Option>
-        <Option value="Returning Customers">Returning Customers</Option>
-        <Option value="VIP Customers">VIP Customers</Option>
+        <Option value="new_customer">New Customers</Option>
+        <Option value="returning_customer">Returning Customers</Option>
+        <Option value="loyal_customer">Loyal Customers</Option>
+        <Option value="vip_customer">VIP Customers</Option>
+        <Option value="all_customer">All Customers</Option>
       </Select>
     </Form.Item>
   );
@@ -26,11 +38,17 @@ const CustomerSegmentSelect = () => {
 const PointsInput = () => {
   return (
     <Form.Item
-      name="title"
+      name="points"
       label="All customers that have at least x number of points"
-      rules={[{ required: true, message: "Please enter a number" }]}
+      rules={[
+        { required: true, message: "Please enter a number" },
+        {
+          pattern: /^[0-9]+$/,
+          message: "Please enter a valid number",
+        },
+      ]}
     >
-      <Input placeholder="" className="mli-tall-input" />
+      <Input placeholder="" className="mli-tall-input" type="number" />
     </Form.Item>
   );
 };
@@ -39,11 +57,17 @@ const PointsInput = () => {
 const RadiusInput = () => {
   return (
     <Form.Item
-      name="message"
+      name="radius"
       label="Customers located within x km of radius from the merchant location"
-      rules={[{ required: true, message: "Please enter distance/KM" }]}
+      rules={[
+        { required: true, message: "Please enter distance/KM" },
+        {
+          pattern: /^[0-9]+$/,
+          message: "Please enter a valid number",
+        },
+      ]}
     >
-      <Input placeholder="" className="mli-tall-input" />
+      <Input placeholder="" className="mli-tall-input" type="number" />
     </Form.Item>
   );
 };
@@ -103,18 +127,58 @@ const ImageUpload = ({ uploadedImage, onUploadChange, onRemove }) => {
 const NotificationsModal = ({ visible, onCancel }) => {
   const [uploadedImage, setUploadedImage] = useState([]);
   const [form] = Form.useForm();
+  const [sendNotification, { isLoading }] = useSendNotificationMutation();
 
-  const handleSendNotification = (values) => {
-    onCancel();
-    Swal.fire({
-      icon: "success",
-      title: "Notification Sent!",
-      text: `Message has been sent to ${values.segment}.`,
-      timer: 1500,
-      showConfirmButton: false,
-    });
-    setUploadedImage([]);
-    form.resetFields();
+  const handleSendNotification = async (values) => {
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+
+      // Map segment values to API format
+      const segmentMap = {
+        vip_customer: "vip_customer",
+        new_customer: "new_customer",
+        returning_customer: "returning_customer",
+        loyal_customer: "loyal_customer",
+        all_customer: "all_customer",
+      };
+
+      // Append fields - send numbers as numbers by parsing first
+      formData.append("segment", segmentMap[values.segment] || values.segment);
+      formData.append("minPoints", parseInt(values.points || 0, 10));
+      formData.append("radiusKm", parseInt(values.radius || 10, 10));
+      formData.append("message", values.additionalInfo || "");
+
+      // Add image as binary if uploaded
+      if (uploadedImage.length > 0) {
+        const file = uploadedImage[0];
+        if (file.originFileObj) {
+          formData.append("image", file.originFileObj);
+        }
+      }
+
+      // Send notification with proper headers
+      const response = await sendNotification(formData).unwrap();
+
+      onCancel();
+      Swal.fire({
+        icon: "success",
+        title: "Notification Sent!",
+        text: `Message has been sent successfully.`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      setUploadedImage([]);
+      form.resetFields();
+    } catch (err) {
+      console.error("Notification error:", err);
+      const errorMsg = err?.data?.message || "Failed to send notification";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMsg,
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -136,37 +200,49 @@ const NotificationsModal = ({ visible, onCancel }) => {
       width={500}
       closable={true}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSendNotification}
-        className="flex flex-col gap-4"
-      >
-        <CustomerSegmentSelect />
+      <Spin spinning={isLoading}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSendNotification}
+          className="flex flex-col gap-4"
+        >
+          <CustomerSegmentSelect />
 
-        <PointsInput />
+          <PointsInput />
 
-        <RadiusInput />
+          <RadiusInput />
 
-        <PromotionMessage />
+          <PromotionMessage />
 
-        <ImageUpload
-          uploadedImage={uploadedImage}
-          onUploadChange={handleUploadChange}
-          onRemove={(file) =>
-            setUploadedImage((prev) => prev.filter((f) => f.uid !== file.uid))
-          }
-        />
+          <ImageUpload
+            uploadedImage={uploadedImage}
+            onUploadChange={handleUploadChange}
+            onRemove={(file) =>
+              setUploadedImage((prev) => prev.filter((f) => f.uid !== file.uid))
+            }
+          />
 
-        <div className="flex gap-2 mt-4">
-          <Button type="default" className="flex-1" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button type="primary" htmlType="submit" className="flex-1">
-            Send
-          </Button>
-        </div>
-      </Form>
+          <div className="flex gap-2 mt-4">
+            <Button
+              type="default"
+              className="flex-1"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="flex-1"
+              loading={isLoading}
+            >
+              Send
+            </Button>
+          </div>
+        </Form>
+      </Spin>
     </Modal>
   );
 };
