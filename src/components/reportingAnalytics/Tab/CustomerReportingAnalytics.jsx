@@ -234,6 +234,44 @@ export default function MonthlyStatsChartCustomer() {
     transformedData,
   ]);
 
+  // Generate 12 months of chart data
+  const chartData = useMemo(() => {
+    const months = [];
+    const now = dayjs();
+
+    for (let i = 11; i >= 0; i--) {
+      const date = now.subtract(i, "month");
+      const monthData = filteredData.filter(
+        (d) => dayjs(d.date).format("YYYY-MM") === date.format("YYYY-MM")
+      );
+
+      const sumRevenue = monthData.reduce(
+        (sum, d) => sum + (d.Revenue || 0),
+        0
+      );
+      const sumUsers = monthData.reduce((sum, d) => sum + (d.Users || 0), 0);
+      const sumPointsRedeemed = monthData.reduce(
+        (sum, d) => sum + (d["Points Redeemed"] || 0),
+        0
+      );
+      const sumPointsAccumulated = monthData.reduce(
+        (sum, d) => sum + (d["Points Accumulated"] || 0),
+        0
+      );
+
+      months.push({
+        date: date.format("MMM YYYY"),
+        fullDate: date.format("YYYY-MM-DD"),
+        Revenue: Math.round(sumRevenue),
+        Users: Math.round(sumUsers),
+        "Points Redeemed": Math.round(sumPointsRedeemed),
+        "Points Accumulated": Math.round(sumPointsAccumulated),
+      });
+    }
+
+    return months;
+  }, [filteredData]);
+
   // Generate dynamic options from transformed data
   const customerOptions = useMemo(() => {
     const customers = new Set(transformedData.map((d) => d.CustomerName));
@@ -566,7 +604,7 @@ export default function MonthlyStatsChartCustomer() {
         <ResponsiveContainer>
           {chartType === "Bar" ? (
             <BarChart
-              data={filteredData}
+              data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               barCategoryGap="20%"
               barGap={13}
@@ -610,7 +648,7 @@ export default function MonthlyStatsChartCustomer() {
             </BarChart>
           ) : chartType === "Line" ? (
             <LineChart
-              data={filteredData}
+              data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
@@ -635,7 +673,7 @@ export default function MonthlyStatsChartCustomer() {
             </LineChart>
           ) : (
             <AreaChart
-              data={filteredData}
+              data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
