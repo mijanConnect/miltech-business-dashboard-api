@@ -14,7 +14,7 @@ export const userManagementApi = api.injectEndpoints({
           });
         }
         return {
-          url: `/usermanagement?${params.toString()}`,
+          url: `/usermanagement/merchantrole?${params.toString()}`,
           method: "GET",
         };
       },
@@ -26,7 +26,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/usermanagement/${id}`,
+        url: `/usermanagement/merchantrole/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["User"],
@@ -36,7 +36,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     updateUserApprovalStatus: builder.mutation({
       query: ({ id, approveStatus }) => ({
-        url: `/usermanagement/${id}`,
+        url: `/usermanagement/merchantrole/${id}`,
         method: "PATCH",
         body: { approveStatus },
       }),
@@ -47,7 +47,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     updateUserStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/usermanagement/toggle/${id}`,
+        url: `/usermanagement/merchantrole/toggle/${id}`,
         method: "PATCH",
         body: { status },
       }),
@@ -58,7 +58,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     createUser: builder.mutation({
       query: (userData) => ({
-        url: `/usermanagement`,
+        url: `/usermanagement/merchantrole`,
         method: "POST",
         body: userData,
       }),
@@ -69,7 +69,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     updateUser: builder.mutation({
       query: ({ id, ...userData }) => ({
-        url: `/usermanagement/${id}`,
+        url: `/usermanagement/merchantrole/${id}`,
         method: "PATCH",
         body: userData,
       }),

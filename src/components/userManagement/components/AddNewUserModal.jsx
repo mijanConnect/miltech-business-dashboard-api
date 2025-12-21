@@ -58,6 +58,13 @@ const AddNewUserModal = ({
           <Input className="mli-tall-input" />
         </Form.Item>
         <Form.Item
+          name="phone"
+          label="Phone Number"
+          rules={[{ required: true, message: "Please enter phone number" }]}
+        >
+          <Input className="mli-tall-input" />
+        </Form.Item>
+        <Form.Item
           name="password"
           label="Password"
           rules={[
@@ -68,13 +75,6 @@ const AddNewUserModal = ({
           ]}
         >
           <Input.Password className="mli-tall-input" />
-        </Form.Item>
-        <Form.Item
-          name="phone"
-          label="Phone Number"
-          rules={[{ required: true, message: "Please enter phone number" }]}
-        >
-          <Input className="mli-tall-input" />
         </Form.Item>
         <Form.Item
           name="role"
