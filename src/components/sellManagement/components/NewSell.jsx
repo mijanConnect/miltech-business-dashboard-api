@@ -241,6 +241,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
         digitalCardCode: cardCode,
         totalBill: approvalResponse.totalBill,
         promotionId: selectedPromotions[0] || null,
+        pointRedeemed: parseFloat(form.getFieldValue("pointRedeemed")) || 0,
       };
 
       const result = await checkoutTransaction(checkoutBody).unwrap();
