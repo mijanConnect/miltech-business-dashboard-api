@@ -80,6 +80,17 @@ export const selleManagementApi = api.injectEndpoints({
       }),
       transformResponse: (response) => response,
     }),
+
+    // ---------------------------------------
+    // GET customer tier information
+    // ---------------------------------------
+    getCustomerTier: builder.query({
+      query: (customerId) => ({
+        url: `/mercent-customer/customers/${customerId}/tier`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response,
+    }),
   }),
 });
 
@@ -91,4 +102,5 @@ export const {
   useGetCustomersQuery,
   useCheckoutTransactionMutation,
   useGetUserTransactionsQuery,
+  useGetCustomerTierQuery,
 } = selleManagementApi;

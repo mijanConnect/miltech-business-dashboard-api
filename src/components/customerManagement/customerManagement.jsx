@@ -35,6 +35,7 @@ const CustomerManagement = () => {
         customerID: item._id || "N/A",
         name: item.name || "N/A",
         image: item.profile || MarchantIcon,
+        customUserId: item.customUserId || "N/A",
         email: item.email || "N/A",
         phone: item.phone || "N/A",
         location: item.country || "N/A",
@@ -130,8 +131,8 @@ const CustomerManagement = () => {
     { title: "SL", dataIndex: "id", key: "id", align: "center" },
     {
       title: "Customer ID",
-      dataIndex: "customerID",
-      key: "customerID",
+      dataIndex: "customUserId",
+      key: "customUserId",
       align: "center",
     },
     { title: "Customer Name", dataIndex: "name", key: "name", align: "center" },

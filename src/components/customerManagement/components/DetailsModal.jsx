@@ -1,7 +1,10 @@
 import { Modal, Table, Spin } from "antd";
 import { useEffect, useState } from "react";
 import MarchantIcon from "../../../assets/marchant.png";
-import { useGetUserTransactionsQuery } from "../../../redux/apiSlices/selleManagementSlice";
+import {
+  useGetUserTransactionsQuery,
+  useGetCustomerTierQuery,
+} from "../../../redux/apiSlices/selleManagementSlice";
 import dayjs from "dayjs";
 
 const DetailsModal = ({
@@ -12,11 +15,18 @@ const DetailsModal = ({
   data,
 }) => {
   const [transactionData, setTransactionData] = useState([]);
+  const [tierData, setTierData] = useState(null);
 
   // Fetch transactions only when modal is visible and record selected
   const { data: transactionsResponse, isLoading: isLoadingTransactions } =
     useGetUserTransactionsQuery(selectedRecord?.id, {
       skip: !isVisible || !selectedRecord?.id,
+    });
+
+  // Fetch customer tier information
+  const { data: tierResponse, isLoading: isLoadingTier } =
+    useGetCustomerTierQuery(selectedRecord?.customerID, {
+      skip: !isVisible || !selectedRecord?.customerID,
     });
 
   // Format transaction data when it arrives
@@ -40,9 +50,16 @@ const DetailsModal = ({
     }
   }, [transactionsResponse]);
 
+  // Update tier data when it arrives
+  useEffect(() => {
+    if (tierResponse?.data) {
+      setTierData(tierResponse.data);
+    }
+  }, [tierResponse]);
+
   return (
     <Modal visible={isVisible} onCancel={onClose} width={900} footer={[]}>
-      <Spin spinning={isLoadingTransactions}>
+      <Spin spinning={isLoadingTransactions || isLoadingTier}>
         {selectedRecord && (
           <div>
             <div className="flex flex-row justify-between items-start gap-3 mt-8">
@@ -75,19 +92,13 @@ const DetailsModal = ({
                 </p>
                 <p>
                   <strong>Points Balance:</strong>{" "}
-                  {selectedRecord.remainingRedemptionPoints}
+                  {tierData?.availablePoints ||
+                    selectedRecord.availablePoints ||
+                    "N/A"}
                 </p>
                 <p>
-                  <strong>Points Earned:</strong>{" "}
-                  {selectedRecord.totalPointsEarned}
-                </p>
-                <p>
-                  <strong>Points Redeemed:</strong>{" "}
-                  {selectedRecord.pointsRedeemed}
-                </p>
-                <p>
-                  <strong>Total Transactions:</strong>{" "}
-                  {selectedRecord.totalTransactions}
+                  <strong>Tier:</strong>{" "}
+                  {tierData?.tierName || selectedRecord.tierName || "N/A"}
                 </p>
               </div>
             </div>
