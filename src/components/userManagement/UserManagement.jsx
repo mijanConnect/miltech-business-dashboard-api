@@ -68,16 +68,7 @@ const UserManagement = () => {
     current: page,
   };
 
-  const [roles] = useState([
-    "ADMIN",
-    "SUPER_ADMIN",
-    "USER",
-    "MERCENT",
-    "ADMIN_REP",
-    "ADMIN_SELL",
-    "VIEW_MERCENT",
-    "VIEW_ADMIN",
-  ]);
+  const [roles] = useState(["MERCENT", "VIEW_MERCENT"]);
 
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);

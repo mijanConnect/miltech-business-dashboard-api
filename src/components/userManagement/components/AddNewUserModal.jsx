@@ -82,11 +82,8 @@ const AddNewUserModal = ({
           rules={[{ required: true, message: "Please select a role" }]}
         >
           <Select placeholder="Select role" className="mli-tall-select">
-            {roles.map((role) => (
-              <Option key={role} value={role}>
-                {role}
-              </Option>
-            ))}
+            <Option value="MERCENT">Admin</Option>
+            <Option value="VIEW_MERCENT">User</Option>
           </Select>
         </Form.Item>
       </Form>
