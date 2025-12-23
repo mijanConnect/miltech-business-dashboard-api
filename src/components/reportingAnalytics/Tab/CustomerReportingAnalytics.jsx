@@ -196,19 +196,19 @@ export default function MonthlyStatsChartCustomer() {
         key: index,
         sl: index + 1,
         date: new Date(),
-        customerId: item.customerId,
-        CustomerName: item.customerName,
-        customerName: item.customerName,
-        Location: item.location,
-        location: item.location,
+        customerId: item.customerId || "-",
+        CustomerName: item.customerName || "-",
+        customerName: item.customerName || "-",
+        Location: item.location || "-",
+        location: item.location || "-",
         SubscriptionStatus: normalizedStatus,
-        subscriptionStatus: item.subscriptionStatus,
-        Revenue: item.revenue,
-        revenue: item.revenue,
-        "Points Accumulated": item.pointsAccumulated,
-        pointsAccumulated: item.pointsAccumulated,
-        "Points Redeemed": item.pointsRedeemed,
-        pointsRedeemed: item.pointsRedeemed,
+        subscriptionStatus: item.subscriptionStatus || "-",
+        Revenue: item.revenue || 0,
+        revenue: item.revenue || 0,
+        "Points Accumulated": item.pointsAccumulated || 0,
+        pointsAccumulated: item.pointsAccumulated || 0,
+        "Points Redeemed": item.pointsRedeemed || 0,
+        pointsRedeemed: item.pointsRedeemed || 0,
         category: "Customer",
         region: item.location,
         Users: Math.random() * 100,
@@ -720,7 +720,7 @@ export default function MonthlyStatsChartCustomer() {
         <CustomTable
           data={filteredData}
           columns={columns}
-          pagination={{ pageSize: 6, total: filteredData.length }}
+          pagination={{ pageSize: 10, total: filteredData.length }}
           rowKey={(record) => record.key}
           isLoading={isLoading}
           isFetching={isFetching}

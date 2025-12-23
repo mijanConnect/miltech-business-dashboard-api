@@ -18,12 +18,46 @@ import Swal from "sweetalert2";
 const { Option } = Select;
 const { TextArea } = Input;
 
+const countryCityData = {
+  Pakistan: [
+    "Islamabad",
+    "Rawalpindi",
+    "Karachi",
+    "Lahore",
+    "Peshawar",
+    "Quetta",
+  ],
+  "United Arab Emirates": [
+    "Abu Dhabi",
+    "Dubai",
+    "Sharjah",
+    "Ajman",
+    "Ras Al Khaimah",
+    "Fujairah",
+    "Umm Al Quwain",
+  ],
+  Oman: ["Muscat"],
+  Qatar: ["Doha"],
+  Kuwait: ["Kuwait City"],
+  Bahrain: ["Manama"],
+  "Saudi Arabia": ["Jeddah", "Riyadh"],
+  Bangladesh: ["Dhaka"],
+  "United Kingdom": [
+    "London",
+    "Manchester",
+    "Birmingham",
+    "Glasgow",
+    "Liverpool",
+  ],
+};
+
 const UserProfile = () => {
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [coverFileList, setCoverFileList] = useState([]);
   const [logoFileList, setLogoFileList] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
   const { user } = useUser();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
@@ -32,6 +66,7 @@ const UserProfile = () => {
   // Use actual user data from context
   useEffect(() => {
     if (user) {
+      const userCountry = user.country || "";
       form.setFieldsValue({
         username: user.firstName || "",
         businessName: user.businessName || "",
@@ -41,12 +76,15 @@ const UserProfile = () => {
         address: user.address || "",
         service: user.service || "",
         location: user.location || "",
-        country: user.country || "",
+        country: userCountry,
         city: user.city || "",
         about: user.about || "",
         coverPhoto: user.coverPhoto || "",
         profile: user.profile || "",
       });
+      if (userCountry) {
+        setSelectedCountry(userCountry);
+      }
 
       // Set profile image if available
       if (user.profile) {
@@ -334,12 +372,16 @@ const UserProfile = () => {
                   showSearch
                   optionFilterProp="children"
                   className="mli-tall-select"
+                  onChange={(value) => {
+                    setSelectedCountry(value);
+                    form.setFieldValue("city", undefined);
+                  }}
                 >
-                  <Option value="Bangladesh">Bangladesh</Option>
-                  <Option value="USA">USA</Option>
-                  <Option value="India">India</Option>
-                  <Option value="Canada">Canada</Option>
-                  <Option value="Australia">Australia</Option>
+                  {Object.keys(countryCityData).map((country) => (
+                    <Option key={country} value={country}>
+                      {country}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
 
@@ -356,13 +398,14 @@ const UserProfile = () => {
                   showSearch
                   optionFilterProp="children"
                   className="mli-tall-select"
+                  disabled={!selectedCountry}
                 >
-                  <Option value="Dhaka">Dhaka</Option>
-                  <Option value="New York">New York</Option>
-                  <Option value="Los Angeles">Los Angeles</Option>
-                  <Option value="Chicago">Chicago</Option>
-                  <Option value="San Francisco">San Francisco</Option>
-                  <Option value="Miami">Miami</Option>
+                  {selectedCountry &&
+                    countryCityData[selectedCountry].map((city) => (
+                      <Option key={city} value={city}>
+                        {city}
+                      </Option>
+                    ))}
                 </Select>
               </Form.Item>
             </div>

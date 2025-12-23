@@ -33,15 +33,15 @@ const SellManagement = () => {
     if (apiData?.data && Array.isArray(apiData.data)) {
       const formattedData = apiData.data.map((item, index) => ({
         id: item._id || index + 1,
-        customerName: item.name || "N/A",
-        email: item.email || "N/A",
-        phone: item.phone || "N/A",
+        customerName: item.name || "-",
+        email: item.email || "-",
+        phone: item.phone || "-",
         totalTransactions: item.totalTransactions || 0,
         totalAmount: item.totalBilled ? `$${item.totalBilled}` : "$0.00",
         pointEarned: item.totalPointsEarned || 0,
         pointRedeem: item.totalPointsRedeemed || 0,
         finalAmount: item.finalBilled ? `$${item.finalBilled}` : "$0.00",
-        cardIds: item.cardIds || "N/A",
+        cardIds: item.cardIds || "-",
         transactionStatus: item.status || "Pending",
         date: item.date || new Date().toISOString().split("T")[0],
       }));

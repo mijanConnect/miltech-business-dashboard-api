@@ -2,9 +2,43 @@ import { Form, Input, Select, Upload, message } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
+import { useState } from "react";
 import { useUpdateProfileMutation } from "../../redux/apiSlices/authSlice";
 
 const { Option } = Select;
+
+const countryCityData = {
+  Pakistan: [
+    "Islamabad",
+    "Rawalpindi",
+    "Karachi",
+    "Lahore",
+    "Peshawar",
+    "Quetta",
+  ],
+  "United Arab Emirates": [
+    "Abu Dhabi",
+    "Dubai",
+    "Sharjah",
+    "Ajman",
+    "Ras Al Khaimah",
+    "Fujairah",
+    "Umm Al Quwain",
+  ],
+  Oman: ["Muscat"],
+  Qatar: ["Doha"],
+  Kuwait: ["Kuwait City"],
+  Bahrain: ["Manama"],
+  "Saudi Arabia": ["Jeddah", "Riyadh"],
+  Bangladesh: ["Dhaka"],
+  "United Kingdom": [
+    "London",
+    "Manchester",
+    "Birmingham",
+    "Glasgow",
+    "Liverpool",
+  ],
+};
 
 const ShopInfo = () => {
   const [form] = Form.useForm();
@@ -12,6 +46,7 @@ const ShopInfo = () => {
   const [searchParams] = useSearchParams();
   const phoneFromQuery = searchParams.get("phone") || "";
   const emailFromQuery = searchParams.get("email") || "";
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
   const onFinish = async (values) => {
@@ -151,10 +186,16 @@ const ShopInfo = () => {
             style={{
               height: 45,
             }}
+            onChange={(value) => {
+              setSelectedCountry(value);
+              form.setFieldValue("city", undefined);
+            }}
           >
-            <Option value="Bangladesh">Bangladesh</Option>
-            <Option value="India">India</Option>
-            <Option value="USA">USA</Option>
+            {Object.keys(countryCityData).map((country) => (
+              <Option key={country} value={country}>
+                {country}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -170,10 +211,14 @@ const ShopInfo = () => {
             style={{
               height: 45,
             }}
+            disabled={!selectedCountry}
           >
-            <Option value="Dhaka">Dhaka</Option>
-            <Option value="Chattogram">Chattogram</Option>
-            <Option value="Sylhet">Sylhet</Option>
+            {selectedCountry &&
+              countryCityData[selectedCountry].map((city) => (
+                <Option key={city} value={city}>
+                  {city}
+                </Option>
+              ))}
           </Select>
         </Form.Item>
 

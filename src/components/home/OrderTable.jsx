@@ -57,14 +57,14 @@ const OrderTable = () => {
         pagination.pageSize +
         index +
         1,
-      customerId: item.customerId || item.id || "N/A",
-      customerName: item.name || item.customerName || "N/A",
+      customerId: item.customerId || item.id || "-",
+      customerName: item.name || item.customerName || "-",
       points: item.availablePoints || item.points || 0,
-      tier: item.loyaltyTier || item.tier || "N/A",
+      tier: item.loyaltyTier || item.tier || "-",
       joiningDate:
         item.joiningDate || item.createdAt
           ? dayjs(item.joiningDate || item.createdAt).format("DD/MM/YYYY")
-          : "N/A",
+          : "-",
       accountStatus: item.accountStatus || item.status || "Active",
       key: index,
     }));
