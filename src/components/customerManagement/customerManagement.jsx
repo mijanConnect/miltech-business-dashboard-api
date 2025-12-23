@@ -32,15 +32,15 @@ const CustomerManagement = () => {
     if (apiData?.data && Array.isArray(apiData.data)) {
       const formattedData = apiData.data.map((item, index) => ({
         id: index + 1,
-        customerID: item._id || "N/A",
-        name: item.name || "N/A",
+        customerID: item._id || "-",
+        name: item.name || "-",
         image: item.profile || MarchantIcon,
-        customUserId: item.customUserId || "N/A",
-        email: item.email || "N/A",
-        phone: item.phone || "N/A",
-        location: item.country || "N/A",
+        customUserId: item.customUserId || "-",
+        email: item.email || "-",
+        phone: item.phone || "-",
+        location: item.country || "-",
         sales: item.totalBilled || 0,
-        salesRep: item.salesRep || "N/A",
+        salesRep: item.salesRep || "-",
         status: item.status || "Pending",
         feedback: item.rating || 0,
         ratingComment: item.ratingComment || "",
@@ -48,7 +48,7 @@ const CustomerManagement = () => {
         remainingRedemptionPoints: item.availablePoints || 0,
         totalTransactions: item.totalTransactions || 0,
         totalPointsEarned: item.totalPointsEarned || 0,
-        cardIds: item.cardIds || "N/A",
+        cardIds: item.cardIds || "-",
       }));
       setData(formattedData);
 

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Table, Tooltip, Modal, Spin } from "antd";
+import dayjs from "dayjs";
 import { useGetCustomersQuery } from "../../redux/apiSlices/selleManagementSlice";
 
 const components = {
@@ -56,11 +57,14 @@ const OrderTable = () => {
         pagination.pageSize +
         index +
         1,
-      customerId: item.customerId || item.id || "-",
-      customerName: item.name || item.customerName || "-",
+      customerId: item.customerId || item.id || "N/A",
+      customerName: item.name || item.customerName || "N/A",
       points: item.availablePoints || item.points || 0,
-      tier: item.loyaltyTier || item.tier || "-",
-      joiningDate: item.joiningDate || item.createdAt || "-",
+      tier: item.loyaltyTier || item.tier || "N/A",
+      joiningDate:
+        item.joiningDate || item.createdAt
+          ? dayjs(item.joiningDate || item.createdAt).format("DD/MM/YYYY")
+          : "N/A",
       accountStatus: item.accountStatus || item.status || "Active",
       key: index,
     }));
