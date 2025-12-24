@@ -14,7 +14,7 @@ export const userManagementApi = api.injectEndpoints({
           });
         }
         return {
-          url: `/usermanagement/merchantrole?${params.toString()}`,
+          url: `/merchant-user/users?${params.toString()}`,
           method: "GET",
         };
       },
@@ -26,7 +26,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/usermanagement/merchantrole/${id}`,
+        url: `/merchant-user/users/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["User"],
@@ -47,7 +47,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     updateUserStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/usermanagement/merchantrole/toggle/${id}`,
+        url: `/merchant-user/users/${id}`,
         method: "PATCH",
         body: { status },
       }),
@@ -58,7 +58,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     createUser: builder.mutation({
       query: (userData) => ({
-        url: `/usermanagement/merchantrole`,
+        url: `/merchant-user/create-user`,
         method: "POST",
         body: userData,
       }),
@@ -69,7 +69,7 @@ export const userManagementApi = api.injectEndpoints({
     // ---------------------------------------
     updateUser: builder.mutation({
       query: ({ id, ...userData }) => ({
-        url: `/usermanagement/merchantrole/${id}`,
+        url: `/merchant-user/users/${id}`,
         method: "PATCH",
         body: userData,
       }),

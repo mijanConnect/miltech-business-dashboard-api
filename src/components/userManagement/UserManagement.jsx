@@ -43,7 +43,7 @@ const UserManagement = () => {
   console.log(response);
 
   const tableData = useMemo(() => {
-    const items = response?.data || [];
+    const items = response?.data?.users || [];
     return items.map((item, index) => ({
       key: item._id,
       recordId: item._id,
@@ -53,7 +53,12 @@ const UserManagement = () => {
       email: item.email || "-",
       password: "******",
       phone: item.phone || "-",
-      role: item.role || "-",
+      role:
+        item.role === "MERCENT"
+          ? "Admin"
+          : item.role === "VIEW_MERCENT"
+          ? "User"
+          : item.role || "-",
       createdAt: item.createdAt
         ? new Date(item.createdAt).toLocaleDateString()
         : "-",
