@@ -14,7 +14,7 @@ export const termsAndConditionApi = api.injectEndpoints({
           });
         }
         return {
-          url: `/rule/terms-and-conditions?${params.toString()}`,
+          url: `/disclaimers/merchant-terms-and-conditions?${params.toString()}`,
           method: "GET",
         };
       },
@@ -26,7 +26,7 @@ export const termsAndConditionApi = api.injectEndpoints({
     // ---------------------------------------
     updateTermsAndConditions: builder.mutation({
       query: (body) => ({
-        url: `/rule/terms-and-conditions`,
+        url: `/disclaimers/merchant-terms-and-conditions`,
         method: "POST",
         body,
       }),

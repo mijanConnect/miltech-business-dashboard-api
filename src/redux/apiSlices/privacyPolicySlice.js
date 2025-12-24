@@ -14,7 +14,7 @@ export const privacyPolicyApi = api.injectEndpoints({
           });
         }
         return {
-          url: `/rule/privacy-policy?${params.toString()}`,
+          url: `/disclaimers/merchant-privacy-policy?${params.toString()}`,
           method: "GET",
         };
       },
@@ -26,7 +26,7 @@ export const privacyPolicyApi = api.injectEndpoints({
     // ---------------------------------------
     updatePrivacyPolicy: builder.mutation({
       query: (body) => ({
-        url: `/rule/privacy-policy`,
+        url: `/disclaimers/merchant-privacy-policy`,
         method: "POST",
         body,
       }),
