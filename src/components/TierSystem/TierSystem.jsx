@@ -240,7 +240,7 @@ export default function TierSystem() {
                     {tier.pointsSystemLockoutDuration}
                   </p>
                   <p>
-                    <span className="font-semibold">Minimum Spend:</span> $
+                    <span className="font-semibold">Minimum Spend:</span>
                     {tier.minSpend}
                   </p>
                 </div>

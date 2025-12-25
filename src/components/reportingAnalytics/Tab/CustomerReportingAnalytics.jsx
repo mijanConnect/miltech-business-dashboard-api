@@ -1,8 +1,11 @@
-import { Button, Col, DatePicker, Form, Row, Select } from "antd";
+import { Button, Col, DatePicker, Form, Row, Select, message } from "antd";
 import "antd/dist/reset.css";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
-import { useGetCustomerReportQuery } from "../../../redux/apiSlices/customerReportSlice";
+import {
+  useGetCustomerReportQuery,
+  useExportCustomerReportMutation,
+} from "../../../redux/apiSlices/customerReportSlice";
 import {
   Area,
   AreaChart,
@@ -141,6 +144,10 @@ export default function MonthlyStatsChartCustomer() {
   const [chartType, setChartType] = useState("Bar");
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
+  // Export mutation hook
+  const [exportReport, { isLoading: isExporting }] =
+    useExportCustomerReportMutation();
+
   // Build query parameters
   const queryParams = [];
   if (fromDate)
@@ -163,6 +170,15 @@ export default function MonthlyStatsChartCustomer() {
       name: "location",
       value: selectedLocation.toLowerCase(),
     });
+  // Add pagination parameters
+  queryParams.push({
+    name: "page",
+    value: pagination.current,
+  });
+  queryParams.push({
+    name: "limit",
+    value: pagination.pageSize,
+  });
 
   // Update browser URL with query parameters
   useEffect(() => {
@@ -183,6 +199,20 @@ export default function MonthlyStatsChartCustomer() {
     isFetching,
   } = useGetCustomerReportQuery(queryParams.length > 0 ? queryParams : []);
 
+  // Extract pagination info from API response
+  const paginationInfo = useMemo(() => {
+    return {
+      current: reportResponse?.pagination?.page || 1,
+      pageSize: reportResponse?.pagination?.limit || 10,
+      total: reportResponse?.pagination?.total || 0,
+    };
+  }, [reportResponse?.pagination]);
+
+  // Handle pagination change
+  const handlePaginationChange = (page, pageSize) => {
+    setPagination({ current: page, pageSize });
+  };
+
   // Transform API data to match table format
   const transformedData = useMemo(() => {
     if (!reportResponse?.data?.records) return [];
@@ -192,9 +222,12 @@ export default function MonthlyStatsChartCustomer() {
         item.subscriptionStatus?.toLowerCase() === "active"
           ? "Active"
           : "Inactive";
+      // Calculate serial number based on pagination
+      const serialNumber =
+        (paginationInfo.current - 1) * paginationInfo.pageSize + index + 1;
       return {
         key: index,
-        sl: index + 1,
+        sl: serialNumber,
         date: new Date(),
         customerId: item.customerId || "-",
         CustomerName: item.customerName || "-",
@@ -214,7 +247,11 @@ export default function MonthlyStatsChartCustomer() {
         Users: Math.random() * 100,
       };
     });
-  }, [reportResponse?.data?.records]);
+  }, [
+    reportResponse?.data?.records,
+    paginationInfo.current,
+    paginationInfo.pageSize,
+  ]);
 
   const filteredData = useMemo(() => {
     return transformedData.filter((d) => {
@@ -338,7 +375,7 @@ export default function MonthlyStatsChartCustomer() {
         dataIndex: "Revenue",
         key: "Revenue",
         align: "center",
-        render: (revenue) => `$${revenue || 0}`,
+        render: (revenue) => `${revenue || 0}`,
       },
     ];
 
@@ -369,6 +406,32 @@ export default function MonthlyStatsChartCustomer() {
 
     return baseColumns;
   }, [selectedPointsFilter]);
+
+  // Handle export report
+  // Handle export report
+  const handleExportReport = async () => {
+    try {
+      const response = await exportReport(queryParams).unwrap();
+
+      // Get the filename or use default
+      let filename = "customer-report.xlsx";
+
+      // Create blob and trigger download
+      const url = window.URL.createObjectURL(response);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      message.success("Report exported successfully");
+    } catch (error) {
+      console.error("Export error:", error);
+      message.error("Failed to export report. Please try again.");
+    }
+  };
 
   return (
     <div style={{ width: "100%" }}>
@@ -589,7 +652,11 @@ export default function MonthlyStatsChartCustomer() {
                   >
                     Clear Selection
                   </Button>
-                  <Button className="bg-primary px-6 py-[19px] rounded-md text-white hover:text-secondary text-[14px] font-bold">
+                  <Button
+                    className="bg-primary px-6 py-[19px] rounded-md text-white hover:text-secondary text-[14px] font-bold"
+                    onClick={handleExportReport}
+                    loading={isExporting}
+                  >
                     Export Report
                   </Button>
                 </div>
@@ -720,7 +787,12 @@ export default function MonthlyStatsChartCustomer() {
         <CustomTable
           data={filteredData}
           columns={columns}
-          pagination={{ pageSize: 10, total: filteredData.length }}
+          pagination={{
+            pageSize: paginationInfo.pageSize,
+            total: paginationInfo.total,
+            current: paginationInfo.current,
+          }}
+          onPaginationChange={handlePaginationChange}
           rowKey={(record) => record.key}
           isLoading={isLoading}
           isFetching={isFetching}
