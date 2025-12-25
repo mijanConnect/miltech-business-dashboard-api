@@ -85,15 +85,15 @@ const router = createBrowserRouter([
         path: "/notification",
         element: <Notifications />,
       },
-      {
-        path: "/success",
-        element: <Success />,
-      },
-      {
-        path: "/failed",
-        element: <Failed />,
-      },
     ],
+  },
+  {
+    path: "/success",
+    element: <Success />,
+  },
+  {
+    path: "/failed",
+    element: <Failed />,
   },
   {
     path: "/auth",
