@@ -113,7 +113,7 @@ const Home = () => {
               <div className="flex flex-col items-baseline">
                 <h2 className="text-[16px] font-semibold mb-1">Total Sales</h2>
                 <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
-                  <Sales className="w-[20px] h-[20px] text-secondary" />$
+                  <Sales className="w-[20px] h-[20px] text-secondary" />
                   {response?.data?.totalSales || 0}
                 </h3>
               </div>

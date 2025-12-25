@@ -104,8 +104,8 @@ const BarChart = () => {
         callbacks: {
           label: (context) => {
             const formatter = new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
+              // style: "currency",
+              // currency: "USD",
               maximumFractionDigits: 0,
             });
             const value = context.raw ?? context.parsed?.y ?? 0;
@@ -139,8 +139,8 @@ const BarChart = () => {
           color: "#181818",
           callback: function (value) {
             const formatter = new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
+              // style: "currency",
+              // currency: "USD",
               maximumFractionDigits: 0,
             });
             return formatter.format(Number(value));

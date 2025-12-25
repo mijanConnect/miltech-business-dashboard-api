@@ -23,6 +23,8 @@ import TermsAndConditions from "../Pages/Dashboard/TermsAndCondition";
 import NotFound from "../NotFound";
 import PrivateRoute from "./ProtectedRoute";
 import SellManagement from "../components/sellManagement/SellManagement";
+import Success from "../components/common/Success";
+import Failed from "../components/common/Failed";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +84,14 @@ const router = createBrowserRouter([
       {
         path: "/notification",
         element: <Notifications />,
+      },
+      {
+        path: "/success",
+        element: <Success />,
+      },
+      {
+        path: "/failed",
+        element: <Failed />,
       },
     ],
   },
