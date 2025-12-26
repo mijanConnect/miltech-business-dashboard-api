@@ -385,12 +385,12 @@ const UserProfile = () => {
                 </Select>
               </Form.Item>
 
-              {/* State */}
+              {/* City */}
               <Form.Item
                 name="city"
-                label="State"
+                label="City"
                 rules={[
-                  { required: true, message: "Please select your State" },
+                  { required: true, message: "Please select your City" },
                 ]}
               >
                 <Select

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Select, Input, Button, Tooltip, message, Form, Modal } from "antd";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import NewSell from "./components/NewSell";
@@ -9,6 +10,7 @@ import { useGetTodaysSellsQuery } from "../../redux/apiSlices/selleManagementSli
 const { Option } = Select;
 
 const SellManagement = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCards, setSelectedCards] = useState([]);
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
@@ -17,6 +19,16 @@ const SellManagement = () => {
   const [isNewSellPage, setIsNewSellPage] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [form] = Form.useForm();
+
+  // Initialize state from URL parameters
+  useEffect(() => {
+    const page = parseInt(searchParams.get("page")) || 1;
+    const limit = parseInt(searchParams.get("limit")) || 10;
+    const term = searchParams.get("searchTerm") || "";
+
+    setPagination({ current: page, pageSize: limit });
+    setSearchText(term);
+  }, []);
 
   // Fetch today's sales from API
   const {
@@ -58,15 +70,32 @@ const SellManagement = () => {
   }, [apiData]);
 
   const handleMonthChange = (month) => setSelectedMonth(month);
-  const handleSearchChange = (e) => setSearchText(e.target.value);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
+    updateURL({ searchTerm: value, page: 1 });
+  };
+
+  const updateURL = (params) => {
+    const newParams = new URLSearchParams(searchParams);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+    });
+    setSearchParams(newParams);
+  };
 
   const filteredData = data.filter((item) => {
     const matchesMonth = selectedMonth
       ? new Date(item.date).getMonth() + 1 === parseInt(selectedMonth)
       : true;
     const matchesSearch = searchText
-      ? item.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.customerId.toLowerCase().includes(searchText.toLowerCase())
+      ? item.customerName?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.email?.toLowerCase().includes(searchText.toLowerCase())
       : true;
     return matchesMonth && matchesSearch;
   });
@@ -99,6 +128,7 @@ const SellManagement = () => {
       current: newPagination.current,
       pageSize: newPagination.pageSize,
     });
+    updateURL({ page: newPagination.current, limit: newPagination.pageSize });
   };
 
   const columns = [

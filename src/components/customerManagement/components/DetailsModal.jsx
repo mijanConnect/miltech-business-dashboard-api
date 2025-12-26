@@ -19,8 +19,8 @@ const DetailsModal = ({
 
   // Fetch transactions only when modal is visible and record selected
   const { data: transactionsResponse, isLoading: isLoadingTransactions } =
-    useGetUserTransactionsQuery(selectedRecord?.id, {
-      skip: !isVisible || !selectedRecord?.id,
+    useGetUserTransactionsQuery(selectedRecord?.customerID, {
+      skip: !isVisible || !selectedRecord?.customerID,
     });
 
   // Fetch customer tier information

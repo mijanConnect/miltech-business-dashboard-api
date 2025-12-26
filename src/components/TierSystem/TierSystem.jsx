@@ -283,6 +283,7 @@ export default function TierSystem() {
                 >
                   <p className="text-gray-800">{log.details}</p>
                   <p className="text-sm text-gray-600">{log.user}</p>
+                  <p className="text-sm text-gray-600">{log.email}</p>
                   <p className="text-sm text-gray-600">
                     {formatTimestamp(log.timestamp)}
                   </p>
