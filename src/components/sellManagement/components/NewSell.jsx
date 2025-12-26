@@ -363,7 +363,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                 <Input className="mli-tall-input" disabled />
               </Form.Item>
               <Form.Item
-                label="Total Bill Amount ($)"
+                label="Total Bill Amount"
                 name="totalAmount"
                 className="mb-3"
                 rules={[
@@ -494,7 +494,6 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                   Total Bill:
                 </p>
                 <p className="font-bold text-[24px] text-secondary">
-                  $
                   {approvalResponse?.totalBill ||
                     form.getFieldValue("totalAmount") ||
                     "0.00"}
@@ -523,7 +522,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                   Promotion Discount:
                 </p>
                 <p className="font-bold text-[24px] text-secondary">
-                  ${approvalResponse?.discountedBill || "0.00"}
+                  {approvalResponse?.discountedBill || "0.00"}
                 </p>
               </div>
               <div className="flex justify-between border-t-2 border-primary pt-2">
@@ -531,7 +530,7 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                   Final Amount:
                 </p>
                 <p className="font-bold text-[24px] text-secondary">
-                  ${approvalResponse?.finalBill || "0.00"}
+                  {approvalResponse?.finalBill || "0.00"}
                 </p>
               </div>
               <Form.Item>
