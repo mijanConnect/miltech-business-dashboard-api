@@ -25,9 +25,11 @@ const SellManagement = () => {
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 10;
     const term = searchParams.get("searchTerm") || "";
+    const view = searchParams.get("view") || "";
 
     setPagination({ current: page, pageSize: limit });
     setSearchText(term);
+    setIsNewSellPage(view === "newsell");
   }, []);
 
   // Fetch today's sales from API
@@ -103,12 +105,21 @@ const SellManagement = () => {
   const handleNewSellSubmit = (values) => {
     message.success("Transaction completed successfully!");
     setIsNewSellPage(false);
+    setEditingRow(null);
+    updateURL({ view: "" });
     // Data will be refreshed automatically when component re-fetches from API
   };
 
   const handleEdit = (record) => {
     setEditingRow({ ...record, date: dayjs(record.date) }); // Ensure date is a valid dayjs object
     setIsNewSellPage(true);
+    updateURL({ view: "newsell" });
+  };
+
+  const handleBackFromNewSell = () => {
+    setIsNewSellPage(false);
+    setEditingRow(null);
+    updateURL({ view: "" });
   };
 
   const handleDelete = (id) => {
@@ -246,7 +257,7 @@ const SellManagement = () => {
   if (isNewSellPage) {
     return (
       <NewSell
-        onBack={() => setIsNewSellPage(false)}
+        onBack={handleBackFromNewSell}
         onSubmit={handleNewSellSubmit} // Pass the function as a prop
         editingRow={editingRow} // Pass the editing row data
       />
@@ -282,10 +293,13 @@ const SellManagement = () => {
           </Select>
         </div>
         <Button
-          onClick={() => setIsNewSellPage(true)}
+          onClick={() => {
+            setIsNewSellPage(true);
+            updateURL({ view: "newsell" });
+          }}
           className="bg-primary px-8 py-5 rounded-full text-white hover:text-secondary text-[17px] font-bold"
         >
-          New Sell
+          Create New Sell
         </Button>
       </div>
 

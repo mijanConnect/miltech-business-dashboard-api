@@ -53,16 +53,49 @@ const AddNewUserModal = ({
         <Form.Item
           name="email"
           label="Email"
-          rules={[{ required: true, message: "Please enter email" }]}
+          rules={[
+            { required: true, message: "Please enter email" },
+            {
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                  return Promise.reject(
+                    new Error("Please enter a valid email address")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
-          <Input className="mli-tall-input" />
+          <Input className="mli-tall-input" placeholder="example@domain.com" />
         </Form.Item>
         <Form.Item
           name="phone"
           label="Phone Number"
-          rules={[{ required: true, message: "Please enter phone number" }]}
+          rules={[
+            { required: true, message: "Please enter phone number" },
+            {
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                // Allow phone numbers with digits, spaces, hyphens, parentheses, and + sign
+                const phoneRegex =
+                  /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/;
+                if (!phoneRegex.test(value.replace(/\s/g, ""))) {
+                  return Promise.reject(
+                    new Error("Please enter a valid phone number")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
-          <Input className="mli-tall-input" />
+          <Input
+            className="mli-tall-input"
+            placeholder="e.g., +1 (555) 123-4567"
+          />
         </Form.Item>
         <Form.Item
           name="password"

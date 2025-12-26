@@ -226,8 +226,22 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
   React.useEffect(() => {
     if (editingRow) {
       form.setFieldsValue(editingRow);
+      setCardCode(editingRow.cardIds || "");
+      setDigitalCardData({
+        availablePoints: editingRow.pointEarned || 0,
+      });
     }
   }, [editingRow, form]);
+
+  React.useEffect(() => {
+    return () => {
+      form.resetFields();
+      setCardCode("");
+      setSelectedPromotions([]);
+      setDigitalCardData(null);
+      setApprovalResponse(null);
+    };
+  }, []);
 
   const handleSubmit = async (values) => {
     // Validate approval response exists before checkout
@@ -346,21 +360,74 @@ const NewSell = ({ onBack, onSubmit, editingRow }) => {
                 name="pointEarned"
                 className="mb-3"
               >
-                <Input className="mli-tall-input" />
+                <Input className="mli-tall-input" disabled />
               </Form.Item>
               <Form.Item
                 label="Total Bill Amount ($)"
                 name="totalAmount"
                 className="mb-3"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const numValue = parseFloat(value);
+                      if (isNaN(numValue)) {
+                        return Promise.reject(
+                          new Error("Please enter a valid number")
+                        );
+                      }
+                      if (numValue < 0) {
+                        return Promise.reject(
+                          new Error("Amount cannot be negative")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Input className="mli-tall-input" />
+                <Input
+                  className="mli-tall-input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                />
               </Form.Item>
               <Form.Item
                 label="Point Redeemed"
                 name="pointRedeemed"
                 className="mb-3"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const numValue = parseFloat(value);
+                      const availablePoints =
+                        parseFloat(form.getFieldValue("pointEarned")) || 0;
+
+                      if (isNaN(numValue)) {
+                        return Promise.reject(
+                          new Error("Please enter a valid number")
+                        );
+                      }
+                      if (numValue < 0) {
+                        return Promise.reject(
+                          new Error("Points cannot be negative")
+                        );
+                      }
+                      if (numValue > availablePoints) {
+                        return Promise.reject(
+                          new Error(
+                            `Cannot exceed available points (${availablePoints})`
+                          )
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Input className="mli-tall-input" />
+                <Input className="mli-tall-input" type="number" min="0" />
               </Form.Item>
               <Form.Item label="Expiry Date" name="date" className="mb-6">
                 <DatePicker
