@@ -71,7 +71,7 @@ const ShopInfo = () => {
 
     const logoFile = values.logo?.[0]?.originFileObj;
     if (logoFile) {
-      formData.append("profile", logoFile);
+      formData.append("image", logoFile);
     }
 
     try {

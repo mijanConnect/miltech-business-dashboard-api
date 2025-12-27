@@ -91,6 +91,8 @@ export const api = createApi({
     "Product",
     "PrivacyPolicy",
     "TermsAndConditions",
+    "CustomerReport",
+    "Notifications",
   ],
   endpoints: () => ({}),
 });
