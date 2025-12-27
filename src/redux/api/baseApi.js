@@ -93,6 +93,9 @@ export const api = createApi({
     "TermsAndConditions",
     "CustomerReport",
     "Notifications",
+    "AuditLog",
+    "SellManagement",
+    "User",
   ],
   endpoints: () => ({}),
 });

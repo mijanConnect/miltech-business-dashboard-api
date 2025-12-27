@@ -83,7 +83,13 @@ const Header = ({ toggleSidebar, isMobile }) => {
         )}
         <h2 className="font-bold text-xl text-secondary">
           Business Dashboard{" "}
-          <span className="text-primary">(Premium Plan)</span>
+          <span className="text-primary">
+            (
+            {user?.subscriptions && user.subscriptions.length > 0
+              ? "Premium Plan"
+              : "No Plan"}
+            )
+          </span>
         </h2>
       </div>
       <div className="flex items-center gap-3">

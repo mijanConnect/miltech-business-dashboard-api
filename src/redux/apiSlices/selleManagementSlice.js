@@ -23,6 +23,7 @@ export const selleManagementApi = api.injectEndpoints({
         body,
       }),
       transformResponse: (response) => response,
+      invalidatesTags: ["sellManagement"],
     }),
 
     // ---------------------------------------
@@ -45,6 +46,7 @@ export const selleManagementApi = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response,
+      providesTags: ["sellManagement"],
     }),
 
     // ---------------------------------------
@@ -56,6 +58,7 @@ export const selleManagementApi = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response,
+      providesTags: ["sellManagement"],
     }),
 
     // ---------------------------------------
@@ -68,6 +71,7 @@ export const selleManagementApi = api.injectEndpoints({
         body,
       }),
       transformResponse: (response) => response,
+      invalidatesTags: ["sellManagement"],
     }),
 
     // ---------------------------------------
@@ -79,6 +83,7 @@ export const selleManagementApi = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response,
+      providesTags: ["sellManagement"],
     }),
 
     // ---------------------------------------
@@ -90,6 +95,7 @@ export const selleManagementApi = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response,
+      providesTags: ["sellManagement"],
     }),
   }),
 });
