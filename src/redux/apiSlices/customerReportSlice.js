@@ -28,7 +28,8 @@ export const customerReportApi = api.injectEndpoints({
       queryFn: async (queryParams, { getState }) => {
         try {
           const token = localStorage.getItem("token");
-          const baseUrl = "http://10.10.7.8:5004/api/v1";
+          // const baseUrl = "http://10.10.7.8:5004/api/v1";
+          const baseUrl = "https://44kb593x-5004.inc1.devtunnels.ms/api/v1";
 
           // Build URL with query parameters
           const params = new URLSearchParams();
