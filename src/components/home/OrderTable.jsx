@@ -57,7 +57,7 @@ const OrderTable = () => {
         pagination.pageSize +
         index +
         1,
-      customerId: item.customerId || item.id || "-",
+      customerId: item.customUserId || item.id || "-",
       customerName: item.name || item.customerName || "-",
       points: item.availablePoints || item.points || 0,
       tier: item.loyaltyTier || item.tier || "-",

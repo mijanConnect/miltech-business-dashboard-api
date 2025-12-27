@@ -66,7 +66,34 @@ const SignUp = () => {
         </Form.Item>
 
         {/* Email */}
-        <FormItem name={"email"} label={"Email"} />
+        <Form.Item
+          name="email"
+          label={<p>Email</p>}
+          rules={[
+            { required: true, message: "Please enter your email" },
+            {
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                  return Promise.reject(
+                    new Error("Please enter a valid email address")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <Input
+            placeholder="Enter your email"
+            style={{
+              height: 45,
+              border: "1px solid #3FAE6A",
+              borderRadius: "200px",
+            }}
+          />
+        </Form.Item>
 
         {/* Phone Number */}
         <Form.Item
@@ -74,6 +101,20 @@ const SignUp = () => {
           label={<p>Phone Number</p>}
           rules={[
             { required: true, message: "Please enter your phone number" },
+            {
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                // Allow digits, spaces, hyphens, parentheses, and leading +
+                const phoneRegex =
+                  /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/;
+                if (!phoneRegex.test(value.replace(/\s/g, ""))) {
+                  return Promise.reject(
+                    new Error("Please enter a valid phone number")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
           ]}
         >
           <Input

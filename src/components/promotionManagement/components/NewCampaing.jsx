@@ -85,6 +85,16 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
     }
   }, [isEdit, editData]);
 
+  // Reset form when switching to add mode so previous data doesn't persist
+  useEffect(() => {
+    if (!isEdit) {
+      form.resetFields();
+      setThumbnail("");
+      setUploadedImage([]);
+      setCheckAll(false);
+    }
+  }, [isEdit, form]);
+
   const handleThumbnailChange = ({ file }) => {
     if (file.status === "done" || file.originFileObj) {
       const reader = new FileReader();
@@ -121,6 +131,7 @@ const NewCampaign = ({ onSave, onCancel, editData = null, isEdit = false }) => {
     form.resetFields();
     setThumbnail("");
     setUploadedImage([]);
+    setCheckAll(false);
   };
 
   // Image upload validation
